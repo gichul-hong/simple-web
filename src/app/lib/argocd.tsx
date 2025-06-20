@@ -1,3 +1,5 @@
+import { createApiError, handleApiError, type ApiError } from './errorHandling';
+
 export interface ArgoCDApplication {
   metadata: {
     name: string;
@@ -127,56 +129,102 @@ const dummyApplications: ArgoCDApplication[] = [
   }
 ];
 
+// Simulate API delay
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Simulate random errors for testing
+const shouldSimulateError = () => Math.random() < 0.05; // 5% chance of error (reduced from 10%)
+
 export async function fetchArgoCDApplications(): Promise<ArgoCDApplication[]> {
   try {
-    // TODO: Uncomment when ArgoCD is ready
-    // const response = await fetch('http://argocd.com/api/v1/applications', {
-    //   headers: {
-    //     'Authorization': `Bearer ${process.env.ARGOCD_TOKEN}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    // });
-    // 
-    // if (!response.ok) {
-    //   throw new Error(`ArgoCD API error: ${response.status}`);
-    // }
-    // 
-    // const data: ArgoCDResponse = await response.json();
-    // return data.items;
+    await delay(1000); // Simulate network delay
 
-    // Return dummy data for now
-    return dummyApplications;
+    // Simulate random errors
+    if (shouldSimulateError()) {
+      throw createApiError('Failed to fetch ArgoCD applications', 500, 'SERVER_ERROR');
+    }
+
+    // Simulate network timeout (very rare)
+    if (Math.random() < 0.01) { // 1% chance of timeout (reduced from 5%)
+      await delay(5000); // 5 second delay to simulate timeout (reduced from 10)
+      throw createApiError('Request timeout', 408, 'TIMEOUT');
+    }
+
+    // Simulate authentication error
+    if (Math.random() < 0.02) { // 2% chance of auth error (reduced from 3%)
+      throw createApiError('Unauthorized access', 401, 'UNAUTHORIZED');
+    }
+
+    // Return dummy data
+    return [
+      {
+        metadata: {
+          name: 'airflow-dags',
+          namespace: 'airflow'
+        },
+        status: {
+          health: { status: 'Healthy' },
+          sync: { status: 'Synced' }
+        }
+      },
+      {
+        metadata: {
+          name: 'mlflow-models',
+          namespace: 'mlflow'
+        },
+        status: {
+          health: { status: 'Healthy' },
+          sync: { status: 'Synced' }
+        }
+      },
+      {
+        metadata: {
+          name: 'monitoring-stack',
+          namespace: 'monitoring'
+        },
+        status: {
+          health: { status: 'Degraded' },
+          sync: { status: 'OutOfSync' }
+        }
+      },
+      {
+        metadata: {
+          name: 'sharedpool-web',
+          namespace: 'default'
+        },
+        status: {
+          health: { status: 'Healthy' },
+          sync: { status: 'Synced' }
+        }
+      }
+    ];
   } catch (error) {
-    console.error('Error fetching ArgoCD applications:', error);
-    // Return dummy data as fallback
-    return dummyApplications;
+    const apiError = handleApiError(error);
+    console.error('Error fetching ArgoCD applications:', apiError);
+    throw apiError;
   }
 }
 
 export async function createArgoCDApplication(applicationData: any): Promise<boolean> {
   try {
-    // TODO: Uncomment when ArgoCD is ready
-    // const response = await fetch('http://argocd.com/api/v1/applications', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${process.env.ARGOCD_TOKEN}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify(applicationData),
-    // });
-    // 
-    // if (!response.ok) {
-    //   throw new Error(`ArgoCD API error: ${response.status}`);
-    // }
-    // 
-    // return true;
+    await delay(2000); // Simulate network delay
 
-    // Simulate successful creation for now
+    // Simulate random errors
+    if (shouldSimulateError()) {
+      throw createApiError('Failed to create application', 500, 'SERVER_ERROR');
+    }
+
+    // Simulate validation error
+    if (!applicationData.metadata?.name) {
+      throw createApiError('Application name is required', 400, 'VALIDATION_ERROR');
+    }
+
     console.log('Creating ArgoCD application:', applicationData);
     return true;
   } catch (error) {
-    console.error('Error creating ArgoCD application:', error);
-    return false;
+    const apiError = handleApiError(error);
+    console.error('Error creating ArgoCD application:', apiError);
+    throw apiError;
   }
 }
 
@@ -184,71 +232,56 @@ export function getStatusColor(status: string): string {
   switch (status.toLowerCase()) {
     case 'healthy':
     case 'synced':
-      return 'text-green-600 bg-green-100';
+      return 'bg-green-100 text-green-800';
     case 'degraded':
     case 'outofsync':
-      return 'text-red-600 bg-red-100';
-    case 'progressing':
-    case 'syncing':
-      return 'text-yellow-600 bg-yellow-100';
+      return 'bg-yellow-100 text-yellow-800';
+    case 'unhealthy':
+    case 'failed':
+      return 'bg-red-100 text-red-800';
     default:
-      return 'text-gray-600 bg-gray-100';
+      return 'bg-gray-100 text-gray-800';
   }
 }
 
 // Helper functions for action buttons
 export function getWebUIUrl(app: ArgoCDApplication): string {
-  // TODO: Replace with actual web UI URLs
-  if (app.metadata.name.includes('airflow')) {
-    return 'http://localhost:8080'; // Airflow Web UI
-  } else if (app.metadata.name.includes('mlflow')) {
-    return 'http://localhost:5000'; // MLflow Web UI
-  }
-  return '#';
+  // In a real implementation, this would construct URLs based on the application
+  const baseUrl = process.env.NEXT_PUBLIC_AIRFLOW_WEBUI_URL || 'http://localhost:8080';
+  return `${baseUrl}/airflow`;
 }
 
 export function getGitHubUrl(app: ArgoCDApplication): string {
-  return app.spec?.source?.repoURL || 'https://github.com/example';
+  // In a real implementation, this would construct GitHub URLs based on the application
+  return `https://github.com/example/${app.metadata.name}`;
 }
 
 export function getGrafanaUrl(app: ArgoCDApplication): string {
-  // TODO: Replace with actual Grafana dashboard URLs
-  return `http://localhost:3001/d/${app.metadata.name}`;
+  // In a real implementation, this would construct Grafana URLs based on the application
+  const baseUrl = process.env.NEXT_PUBLIC_GRAFANA_URL || 'http://localhost:3001';
+  return `${baseUrl}/d/airflow`;
 }
 
 export function getFileBrowserUrl(app: ArgoCDApplication): string {
-  // TODO: Replace with actual FileBrowser URLs
-  // FileBrowser typically runs on port 8080 or 9000
-  if (app.metadata.name.includes('airflow')) {
-    return 'http://localhost:9000'; // Airflow FileBrowser
-  } else if (app.metadata.name.includes('mlflow')) {
-    return 'http://localhost:9001'; // MLflow FileBrowser
-  }
-  return 'http://localhost:9000'; // Default FileBrowser
+  // In a real implementation, this would construct FileBrowser URLs based on the application
+  const baseUrl = process.env.NEXT_PUBLIC_FILEBROWSER_URL || 'http://localhost:8080';
+  return `${baseUrl}/filebrowser`;
 }
 
 export async function refreshApplication(appName: string): Promise<boolean> {
   try {
-    // TODO: Uncomment when ArgoCD is ready
-    // const response = await fetch(`http://argocd.com/api/v1/applications/${appName}/refresh`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${process.env.ARGOCD_TOKEN}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    // });
-    // 
-    // if (!response.ok) {
-    //   throw new Error(`ArgoCD API error: ${response.status}`);
-    // }
-    // 
-    // return true;
+    await delay(1500); // Simulate network delay
 
-    // Simulate successful refresh for now
-    console.log('Refreshing application:', appName);
+    // Simulate random errors
+    if (shouldSimulateError()) {
+      throw createApiError('Failed to refresh application', 500, 'SERVER_ERROR');
+    }
+
+    console.log('Refreshing ArgoCD application:', appName);
     return true;
   } catch (error) {
-    console.error('Error refreshing application:', error);
-    return false;
+    const apiError = handleApiError(error);
+    console.error('Error refreshing ArgoCD application:', apiError);
+    throw apiError;
   }
 } 

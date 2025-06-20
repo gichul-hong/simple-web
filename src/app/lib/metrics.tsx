@@ -1,19 +1,21 @@
+import { createApiError, handleApiError } from './errorHandling';
+
 export interface ClusterMetrics {
   cpu: {
-    capacity: number;
     used: number;
+    capacity: number;
     dailyUsage: number;
     weeklyUsage: number;
   };
   memory: {
-    capacity: number;
     used: number;
+    capacity: number;
     dailyUsage: number;
     weeklyUsage: number;
   };
   gpu: {
-    capacity: number;
     used: number;
+    capacity: number;
     dailyUsage: number;
     weeklyUsage: number;
   };
@@ -32,107 +34,102 @@ export interface ServiceMetrics {
   };
 }
 
-// Dummy data for development
-const dummyClusterMetrics: ClusterMetrics = {
-  cpu: {
-    capacity: 64,
-    used: 42.5,
-    dailyUsage: 38.2,
-    weeklyUsage: 41.8
-  },
-  memory: {
-    capacity: 256, // GB
-    used: 184.3,
-    dailyUsage: 172.1,
-    weeklyUsage: 189.7
-  },
-  gpu: {
-    capacity: 16,
-    used: 12,
-    dailyUsage: 10.5,
-    weeklyUsage: 11.8
-  }
-};
+// Simulate API delay
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const dummyServiceMetrics: ServiceMetrics = {
-  airflow: {
-    instances: 8,
-    utilization: 78.5,
-    activeDags: 156
-  },
-  mlflow: {
-    instances: 5,
-    utilization: 65.2,
-    activeExperiments: 89
-  }
-};
+// Simulate random errors for testing
+const shouldSimulateError = () => Math.random() < 0.03; // 3% chance of error (reduced from 8%)
 
 export async function fetchClusterMetrics(): Promise<ClusterMetrics> {
   try {
-    // TODO: Uncomment when Prometheus is ready
-    // const response = await fetch('http://prometheus:9090/api/v1/query', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/x-www-form-urlencoded',
-    //   },
-    //   body: new URLSearchParams({
-    //     query: 'kube_node_status_capacity_cpu_cores',
-    //   }),
-    // });
-    // 
-    // if (!response.ok) {
-    //   throw new Error(`Prometheus API error: ${response.status}`);
-    // }
-    // 
-    // const data = await response.json();
-    // Process Prometheus data here...
+    await delay(800); // Simulate network delay
 
-    // Return dummy data for now
-    return dummyClusterMetrics;
+    // Simulate random errors
+    if (shouldSimulateError()) {
+      throw createApiError('Failed to fetch cluster metrics', 500, 'SERVER_ERROR');
+    }
+
+    // Simulate network timeout (very rare)
+    if (Math.random() < 0.005) { // 0.5% chance of timeout (reduced from 3%)
+      await delay(4000); // 4 second delay to simulate timeout (reduced from 8)
+      throw createApiError('Request timeout', 408, 'TIMEOUT');
+    }
+
+    // Return dummy data
+    return {
+      cpu: {
+        used: 12.5,
+        capacity: 32,
+        dailyUsage: 11.2,
+        weeklyUsage: 10.8
+      },
+      memory: {
+        used: 45.2,
+        capacity: 128,
+        dailyUsage: 42.1,
+        weeklyUsage: 41.5
+      },
+      gpu: {
+        used: 8,
+        capacity: 16,
+        dailyUsage: 7.5,
+        weeklyUsage: 7.2
+      }
+    };
   } catch (error) {
-    console.error('Error fetching cluster metrics:', error);
-    return dummyClusterMetrics;
+    const apiError = handleApiError(error);
+    console.error('Error fetching cluster metrics:', apiError);
+    throw apiError;
   }
 }
 
 export async function fetchServiceMetrics(): Promise<ServiceMetrics> {
   try {
-    // TODO: Uncomment when Prometheus is ready
-    // const response = await fetch('http://prometheus:9090/api/v1/query', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/x-www-form-urlencoded',
-    //   },
-    //   body: new URLSearchParams({
-    //     query: 'airflow_dag_processing_total',
-    //   }),
-    // });
-    // 
-    // if (!response.ok) {
-    //   throw new Error(`Prometheus API error: ${response.status}`);
-    // }
-    // 
-    // const data = await response.json();
-    // Process Prometheus data here...
+    await delay(600); // Simulate network delay
 
-    // Return dummy data for now
-    return dummyServiceMetrics;
+    // Simulate random errors
+    if (shouldSimulateError()) {
+      throw createApiError('Failed to fetch service metrics', 500, 'SERVER_ERROR');
+    }
+
+    // Simulate authentication error (very rare)
+    if (Math.random() < 0.01) { // 1% chance of auth error (reduced from 2%)
+      throw createApiError('Unauthorized access to metrics', 401, 'UNAUTHORIZED');
+    }
+
+    // Return dummy data
+    return {
+      airflow: {
+        instances: 3,
+        utilization: 75,
+        activeDags: 12
+      },
+      mlflow: {
+        instances: 2,
+        utilization: 45,
+        activeExperiments: 8
+      }
+    };
   } catch (error) {
-    console.error('Error fetching service metrics:', error);
-    return dummyServiceMetrics;
+    const apiError = handleApiError(error);
+    console.error('Error fetching service metrics:', apiError);
+    throw apiError;
   }
 }
 
 export function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) return '0 Bytes';
+  
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 export function getUtilizationColor(utilization: number): string {
-  if (utilization >= 80) return 'text-red-600 bg-red-100';
-  if (utilization >= 60) return 'text-yellow-600 bg-yellow-100';
-  return 'text-green-600 bg-green-100';
+  if (utilization >= 90) return 'text-red-600';
+  if (utilization >= 75) return 'text-yellow-600';
+  if (utilization >= 50) return 'text-blue-600';
+  return 'text-green-600';
 } 
