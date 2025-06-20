@@ -216,6 +216,17 @@ export function getGrafanaUrl(app: ArgoCDApplication): string {
   return `http://localhost:3001/d/${app.metadata.name}`;
 }
 
+export function getFileBrowserUrl(app: ArgoCDApplication): string {
+  // TODO: Replace with actual FileBrowser URLs
+  // FileBrowser typically runs on port 8080 or 9000
+  if (app.metadata.name.includes('airflow')) {
+    return 'http://localhost:9000'; // Airflow FileBrowser
+  } else if (app.metadata.name.includes('mlflow')) {
+    return 'http://localhost:9001'; // MLflow FileBrowser
+  }
+  return 'http://localhost:9000'; // Default FileBrowser
+}
+
 export async function refreshApplication(appName: string): Promise<boolean> {
   try {
     // TODO: Uncomment when ArgoCD is ready

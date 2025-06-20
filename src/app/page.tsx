@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useSession, signIn } from 'next-auth/react';
 import { 
   fetchClusterMetrics, 
   fetchServiceMetrics, 
@@ -11,31 +12,84 @@ import {
 } from './lib/metrics';
 
 export default function HomePage() {
+  const { data: session, status } = useSession();
   const [clusterMetrics, setClusterMetrics] = useState<ClusterMetrics | null>(null);
   const [serviceMetrics, setServiceMetrics] = useState<ServiceMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadMetrics = async () => {
-      setLoading(true);
-      try {
-        const [cluster, service] = await Promise.all([
-          fetchClusterMetrics(),
-          fetchServiceMetrics()
-        ]);
-        setClusterMetrics(cluster);
-        setServiceMetrics(service);
-      } catch (error) {
-        console.error('Error loading metrics:', error);
-      }
-      setLoading(false);
-    };
+    // Only load metrics if user is authenticated
+    if (session) {
+      const loadMetrics = async () => {
+        setLoading(true);
+        try {
+          const [cluster, service] = await Promise.all([
+            fetchClusterMetrics(),
+            fetchServiceMetrics()
+          ]);
+          setClusterMetrics(cluster);
+          setServiceMetrics(service);
+        } catch (error) {
+          console.error('Error loading metrics:', error);
+        }
+        setLoading(false);
+      };
 
-    loadMetrics();
-    // Refresh metrics every 30 seconds
-    const interval = setInterval(loadMetrics, 30000);
-    return () => clearInterval(interval);
-  }, []);
+      loadMetrics();
+      // Refresh metrics every 30 seconds
+      const interval = setInterval(loadMetrics, 30000);
+      return () => clearInterval(interval);
+    } else {
+      setLoading(false);
+    }
+  }, [session]);
+
+  // Show loading while checking authentication status
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-white font-bold text-2xl">SP</span>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">SharedPool Admin Portal</h1>
+              <p className="text-gray-600 mb-8">
+                사내 배치 수행환경 SaaS 플랫폼 관리 포털에 오신 것을 환영합니다.
+              </p>
+              <div className="bg-white rounded-lg shadow-sm p-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">로그인이 필요합니다</h2>
+                <p className="text-gray-600 mb-6">
+                  대시보드와 관리 기능을 사용하려면 GitHub 계정으로 로그인해주세요.
+                </p>
+                <button
+                  onClick={() => signIn("github")}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-medium transition-colors"
+                >
+                  GitHub로 로그인
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useSession, signIn } from 'next-auth/react';
 import { 
   fetchArgoCDApplications, 
   getStatusColor, 
@@ -8,11 +9,13 @@ import {
   getWebUIUrl,
   getGitHubUrl,
   getGrafanaUrl,
+  getFileBrowserUrl,
   refreshApplication,
   type ArgoCDApplication 
 } from '../lib/argocd';
 
 export default function MLflowPage() {
+  const { data: session, status } = useSession();
   const [applications, setApplications] = useState<ArgoCDApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState<string | null>(null);
@@ -23,8 +26,7 @@ export default function MLflowPage() {
     const mlflowApplications = apps.filter(app => 
       app.metadata.namespace === 'mlflow' || 
       app.metadata.name.includes('mlflow') ||
-      app.metadata.name.includes('model') ||
-      app.metadata.name.includes('training')
+      app.metadata.name.includes('ml')
     );
     setApplications(mlflowApplications);
     setLoading(false);
@@ -32,8 +34,12 @@ export default function MLflowPage() {
 
   // Load applications on component mount
   useEffect(() => {
-    loadApplications();
-  }, []);
+    if (session) {
+      loadApplications();
+    } else {
+      setLoading(false);
+    }
+  }, [session]);
 
   const handleCreateApplication = async () => {
     const applicationData = {
@@ -82,6 +88,55 @@ export default function MLflowPage() {
     setRefreshing(null);
   };
 
+  // Show loading while checking authentication status
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-white font-bold text-2xl">SP</span>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">SharedPool Admin Portal</h1>
+              <p className="text-gray-600 mb-8">
+                이 페이지에 접근하려면 로그인이 필요합니다.
+              </p>
+              <div className="bg-white rounded-lg shadow-sm p-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">로그인이 필요합니다</h2>
+                <p className="text-gray-600 mb-6">
+                  MLflow 관리 기능을 사용하려면 GitHub 계정으로 로그인해주세요.
+                </p>
+                <button
+                  onClick={() => signIn("github")}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-medium transition-colors"
+                >
+                  GitHub로 로그인
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -112,7 +167,7 @@ export default function MLflowPage() {
           </div>
           
           <p className="text-gray-600 mb-8">
-            MLflow is an open-source platform for managing the end-to-end machine learning lifecycle.
+            MLflow is an open source platform for managing the end-to-end machine learning lifecycle.
           </p>
 
           {/* ArgoCD Applications Section */}
@@ -191,6 +246,14 @@ export default function MLflowPage() {
                             >
                               Grafana
                             </a>
+                            <a
+                              href={getFileBrowserUrl(app)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-orange-600 hover:text-orange-900 bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded text-xs"
+                            >
+                              FileBrowser
+                            </a>
                             <button
                               onClick={() => handleRefreshApplication(app.metadata.name)}
                               disabled={refreshing === app.metadata.name}
@@ -217,16 +280,16 @@ export default function MLflowPage() {
           {/* Features Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-orange-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-orange-900 mb-2">Tracking</h3>
-              <p className="text-orange-700">Experiment tracking and model versioning</p>
+              <h3 className="text-lg font-semibold text-orange-900 mb-2">Experiments</h3>
+              <p className="text-orange-700">Track and compare ML experiments</p>
             </div>
-            <div className="bg-red-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-red-900 mb-2">Models</h3>
-              <p className="text-red-700">Model packaging and deployment management</p>
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">Models</h3>
+              <p className="text-blue-700">Model versioning and deployment</p>
             </div>
-            <div className="bg-indigo-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-indigo-900 mb-2">Registry</h3>
-              <p className="text-indigo-700">Centralized model registry and lifecycle management</p>
+            <div className="bg-green-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-green-900 mb-2">Registry</h3>
+              <p className="text-green-700">Centralized model registry</p>
             </div>
           </div>
         </div>
