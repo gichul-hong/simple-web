@@ -1,7 +1,6 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 
 export function Navigation() {
@@ -13,13 +12,12 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
           <div className="flex items-center">
-            <Image
-              src="/next.svg"
-              alt="Logo"
-              width={100}
-              height={24}
-              className="dark:invert"
-            />
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">SP</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">SharedPool</span>
+            </Link>
           </div>
 
           {/* Navigation Links */}
