@@ -1,77 +1,78 @@
 # SharedPool - 사내 배치 수행환경 SaaS 플랫폼
 
-SharedPool은 사내 배치 수행환경을 SaaS 형태로 제공하는 플랫폼입니다. Airflow와 MLflow를 통합하여 워크플로우 관리와 ML 모델 실험/배포를 지원하며, Prometheus를 통한 실시간 모니터링을 제공합니다.
+SharedPool은 사내 배치 수행환경을 SaaS 형태로 제공하는 플랫폼입니다.  
+Airflow, MLflow, Prometheus, ArgoCD 등 다양한 오픈소스와 연동하여 워크플로우, ML 실험, 리소스 모니터링, 배포를 통합 관리합니다.
+
+---
 
 ## 주요 기능
 
-### 🏠 대시보드
-- **실시간 메트릭**: Prometheus를 통한 클러스터 리소스 모니터링
-- **서비스 현황**: Airflow/MLflow 인스턴스 및 활용도 현황
-- **리소스 사용량**: CPU, Memory, GPU 일간/주간 사용량 추이
+- **대시보드**: 실시간 클러스터/서비스 메트릭, 리소스 사용량, 서비스 현황
+- **Airflow 관리**: DAG/워크플로우 관리, 실시간 모니터링, ArgoCD 연동 배포
+- **MLflow 관리**: 실험/모델 관리, 버전 관리, ArgoCD 연동 배포
+- **시스템 모니터링**: Prometheus 기반 리소스/성능 지표, Kubernetes/ArgoCD 상태
+- **파일 브라우저**: 파일 탐색 기능 (버튼 제공)
+- **인증/권한**: GitHub.com, GitHub Enterprise, Keycloak 지원, 그룹별 UI 제어
+- **에러 처리**: ErrorBoundary, ErrorMessage 컴포넌트, API 에러 핸들링
+- **자동 로그아웃**: 60분 비활성 시 자동 로그아웃
+- **관리자 권한**: SYSTEM_ADMIN 그룹만 접근 가능한 메뉴/버튼 제공
 
-### 🔄 Airflow 관리
-- DAG 배포 및 워크플로우 관리
-- ArgoCD를 통한 애플리케이션 배포
-- 실시간 워크플로우 모니터링
-
-### 🧪 MLflow 관리
-- ML 모델 실험 및 배포 관리
-- 실험 추적 및 모델 버전 관리
-- ArgoCD를 통한 모델 서비스 배포
-
-### 📊 시스템 모니터링
-- Kubernetes 클러스터 상태 모니터링
-- ArgoCD 애플리케이션 현황
-- 리소스 사용량 및 성능 지표
+---
 
 ## 기술 스택
 
 - **Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS
-- **Authentication**: NextAuth.js (GitHub OAuth)
-- **Monitoring**: Prometheus
-- **Orchestration**: ArgoCD
-- **Workflow**: Apache Airflow
-- **ML Platform**: MLflow
+- **인증**: NextAuth.js (GitHub/Keycloak)
+- **모니터링**: Prometheus
+- **워크플로우/배포**: Airflow, ArgoCD
+- **ML 플랫폼**: MLflow
 - **Container**: Kubernetes
+
+---
 
 ## 시작하기
 
-### 1. 환경 설정
+### 1. 의존성 설치
 
 ```bash
-# 의존성 설치
 npm install
-
-# 환경 변수 설정
-cp .env.sample .env.local
+# 또는
+pnpm install
 ```
 
 ### 2. 환경 변수 설정
 
-`.env.local` 파일에 다음 환경 변수를 설정하세요:
+`.env.local` 파일을 아래와 같이 작성하세요.  
+자세한 항목은 `env.sample` 참고.
 
 ```env
 # NextAuth.js
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret
+NEXTAUTH_SECRET=your-nextauth-secret-here
 
-# GitHub OAuth
-GITHUB_ID=your-github-oauth-app-id
-GITHUB_SECRET=your-github-oauth-app-secret
+# GitHub OAuth (GitHub.com 또는 Enterprise)
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+# GITHUB_ENTERPRISE_URL=https://github.company.com
 
-# Prometheus (선택사항)
+# Keycloak OAuth (선택)
+KEYCLOAK_CLIENT_ID=
+KEYCLOAK_CLIENT_SECRET=
+KEYCLOAK_ISSUER=https://keycloak.company.com/realms/yourrealm
+KEYCLOAK_SCOPE=openid profile email groups
+
+# 인증 프로바이더 선택: github 또는 keycloak
+AUTH_PROVIDER=github
+
+# Prometheus/ArgoCD 등 외부 서비스 연동 (선택)
 PROMETHEUS_URL=http://prometheus:9090
-
-# ArgoCD (선택사항)
 ARGOCD_SERVER_URL=http://argocd-server:8080
-ARGOCD_TOKEN=your-argocd-token
 ```
 
-### 3. GitHub OAuth 앱 설정
+### 3. GitHub/Keycloak OAuth 앱 등록
 
-1. GitHub에서 새로운 OAuth App 생성
-2. Authorization callback URL을 `http://localhost:3000/api/auth/callback/github`로 설정
-3. Client ID와 Client Secret을 환경 변수에 설정
+- GitHub: OAuth App 생성, 콜백 URL은 `http://localhost:3000/api/auth/callback/github`
+- Keycloak: Realm/Client 등록, 콜백 URL은 `http://localhost:3000/api/auth/callback/keycloak`
 
 ### 4. 개발 서버 실행
 
@@ -79,7 +80,9 @@ ARGOCD_TOKEN=your-argocd-token
 npm run dev
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 SharedPool 대시보드를 확인하세요.
+브라우저에서 [http://localhost:3000](http://localhost:3000) 접속
+
+---
 
 ## 프로젝트 구조
 
@@ -89,7 +92,7 @@ src/
 │   ├── api/
 │   │   └── auth/
 │   │       └── [...nextauth]/
-│   │           └── route.ts          # NextAuth.js API 라우트
+│   │           └── route.ts          # NextAuth.js 인증 라우트
 │   ├── airflow/
 │   │   └── page.tsx                  # Airflow 관리 페이지
 │   ├── mlflow/
@@ -97,56 +100,63 @@ src/
 │   ├── monitoring/
 │   │   └── page.tsx                  # 시스템 모니터링 페이지
 │   ├── components/
-│   │   └── Navigation.tsx            # 네비게이션 컴포넌트
+│   │   ├── Navigation.tsx            # 네비게이션
+│   │   ├── CreateApplicationModal.tsx# 앱 생성 모달
+│   │   ├── ErrorBoundary.tsx         # 에러 바운더리
+│   │   └── ErrorMessage.tsx          # 에러 메시지
+│   ├── hooks/
+│   │   └── useAutoLogout.ts          # 자동 로그아웃 훅
 │   ├── lib/
-│   │   ├── metrics.tsx               # Prometheus 메트릭 유틸리티
-│   │   └── argocd.ts                 # ArgoCD API 유틸리티
+│   │   ├── metrics.tsx               # Prometheus 메트릭 유틸
+│   │   ├── argocd.tsx                # ArgoCD 유틸
+│   │   └── errorHandling.ts          # API 에러 처리
 │   ├── globals.css                   # 전역 스타일
 │   ├── layout.tsx                    # 루트 레이아웃
 │   └── page.tsx                      # 홈 대시보드
 ```
 
-## 메트릭 수집
+---
 
-### Prometheus 연동
+## 인증/권한 및 그룹별 UI 제어
 
-SharedPool은 Prometheus를 통해 다음 메트릭을 수집합니다:
+- GitHub.com, GitHub Enterprise, Keycloak 지원 (ENV로 선택)
+- Keycloak 그룹 정보(JWT) 기반으로 SYSTEM_ADMIN만 접근 가능한 메뉴/버튼 구현 가능
+- HOWTO: [HOWTO.md](./HOWTO.md) 참고
 
-- **클러스터 리소스**: CPU, Memory, GPU 사용량
-- **Airflow 메트릭**: DAG 실행 상태, 워크플로우 성능
-- **MLflow 메트릭**: 실험 수, 모델 배포 상태
-- **Kubernetes 메트릭**: 노드 상태, 파드 리소스 사용량
+---
 
-### 커스텀 메트릭 추가
+## 에러 처리
 
-`src/app/lib/metrics.tsx`에서 새로운 메트릭을 추가할 수 있습니다:
+- 모든 페이지에 ErrorBoundary 적용
+- API 에러는 ErrorMessage 컴포넌트로 사용자에게 안내
+- 네트워크/권한/타임아웃 등 다양한 에러 유형 구분
 
-```typescript
-export async function fetchCustomMetrics() {
-  // Prometheus 쿼리 추가
-  const response = await fetch('http://prometheus:9090/api/v1/query', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ query: 'your_metric_query' }),
-  });
-  
-  return response.json();
-}
-```
+---
+
+## 자동 로그아웃
+
+- 60분 비활성 시 자동 로그아웃 (`useAutoLogout` 훅 사용)
+
+---
+
+## 메트릭/모니터링
+
+- Prometheus에서 클러스터/서비스 메트릭 수집
+- Airflow/MLflow/ArgoCD 상태 실시간 표시
+- 30초마다 자동 갱신
+
+---
 
 ## 배포
 
-### Docker 배포
+### Docker
 
 ```bash
-# Docker 이미지 빌드
 docker build -t sharedpool .
-
-# 컨테이너 실행
 docker run -p 3000:3000 sharedpool
 ```
 
-### Kubernetes 배포
+### Kubernetes
 
 ```yaml
 apiVersion: apps/v1
@@ -173,18 +183,27 @@ spec:
           value: "https://sharedpool.example.com"
 ```
 
+---
+
 ## 기여하기
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Fork 후 브랜치 생성 (`git checkout -b feature/your-feature`)
+2. 변경사항 커밋 (`git commit -m 'Add feature'`)
+3. 원격 브랜치 푸시 (`git push origin feature/your-feature`)
+4. Pull Request 생성
+
+---
 
 ## 라이선스
 
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+MIT License. 자세한 내용은 [LICENSE](LICENSE) 참고.
 
-## 지원
+---
 
-문제가 발생하거나 질문이 있으시면 [Issues](../../issues)를 통해 문의해 주세요.
+## 문의/지원
+
+문제 발생 시 [Issues](../../issues) 등록 또는 메인테이너에게 문의
+
+---
+
+**그룹별 UI 제어, SYSTEM_ADMIN 전용 메뉴 등은 HOWTO.md를 참고하세요!**
