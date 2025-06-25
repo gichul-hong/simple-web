@@ -6,6 +6,13 @@ import Link from "next/link";
 export function Navigation() {
   const { data: session, status } = useSession();
 
+  // 메뉴 클릭 시 admin alert
+  const handleAdminAlert = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (session && (session as any).isAdmin) {
+      alert("admin");
+    }
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,16 +30,16 @@ export function Navigation() {
           {/* Navigation Links - Only show when authenticated */}
           {session && (
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              <Link href="/" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium" onClick={handleAdminAlert}>
                 Home
               </Link>
-              <Link href="/airflow" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              <Link href="/airflow" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium" onClick={handleAdminAlert}>
                 Airflow
               </Link>
-              <Link href="/mlflow" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              <Link href="/mlflow" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium" onClick={handleAdminAlert}>
                 MLflow
               </Link>
-              <Link href="/monitoring" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+              <Link href="/monitoring" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium" onClick={handleAdminAlert}>
                 Monitoring
               </Link>
             </div>
