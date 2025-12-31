@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Application } from '@/types/application';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Application, PaginatedResponse } from '@/types/application';
 import { ApplicationCard } from './ApplicationCard';
 import { ApplicationRow } from './ApplicationRow';
-import { LayoutGrid, List as ListIcon, Search, RefreshCw } from 'lucide-react';
+import { LayoutGrid, List as ListIcon, Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function ApplicationList() {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -12,17 +12,32 @@ export function ApplicationList() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 12;
 
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async (page: number, searchTerm: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/applications');
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: itemsPerPage.toString(),
+        search: searchTerm,
+      });
+      
+      const response = await fetch(`/api/applications?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch applications');
       }
-      const data = await response.json();
-      setApplications(data);
+      const data: PaginatedResponse<Application> = await response.json();
+      setApplications(data.data);
+      setTotalPages(data.meta.totalPages);
+      setTotalItems(data.meta.total);
+      setCurrentPage(data.meta.page);
     } catch (err) {
         if (err instanceof Error) {
              setError(err.message);
@@ -32,17 +47,23 @@ export function ApplicationList() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchApplications();
   }, []);
 
-  const filteredApps = applications.filter(app => 
-    app.name.toLowerCase().includes(filter.toLowerCase()) || 
-    app.namespace.toLowerCase().includes(filter.toLowerCase()) ||
-    app.project.toLowerCase().includes(filter.toLowerCase())
-  );
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        fetchApplications(1, filter);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filter, fetchApplications]);
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+      if (newPage >= 1 && newPage <= totalPages) {
+          fetchApplications(newPage, filter);
+      }
+  };
 
   return (
     <div className="space-y-6">
@@ -75,7 +96,7 @@ export function ApplicationList() {
                 </button>
             </div>
             <button 
-                onClick={fetchApplications} 
+                onClick={() => fetchApplications(currentPage, filter)} 
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
             >
@@ -94,13 +115,13 @@ export function ApplicationList() {
       {loading && !applications.length ? (
         viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div key={i} className="h-64 rounded-xl border bg-gray-50 animate-pulse" />
                 ))}
             </div>
         ) : (
             <div className="space-y-4">
-                 {[1, 2, 3].map((i) => (
+                 {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div key={i} className="h-20 rounded-lg border bg-gray-50 animate-pulse" />
                 ))}
             </div>
@@ -109,7 +130,7 @@ export function ApplicationList() {
         <>
             {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredApps.map((app) => (
+                {applications.map((app) => (
                     <ApplicationCard key={app.name} app={app} />
                 ))}
                 </div>
@@ -130,7 +151,7 @@ export function ApplicationList() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">
-                                {filteredApps.map((app) => (
+                                {applications.map((app) => (
                                     <ApplicationRow key={app.name} app={app} />
                                 ))}
                             </tbody>
@@ -139,9 +160,76 @@ export function ApplicationList() {
                 </div>
             )}
             
-            {filteredApps.length === 0 && !loading && (
+            {applications.length === 0 && !loading && (
                 <div className="py-12 text-center text-gray-500">
                     No applications found matching your search.
+                </div>
+            )}
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-200 pt-6">
+                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm text-gray-700">
+                                Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
+                                <span className="font-medium">{totalItems}</span> results
+                            </p>
+                        </div>
+                        <div>
+                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <span className="sr-only">Previous</span>
+                                    <ChevronLeft size={16} />
+                                </button>
+                                {[...Array(totalPages)].map((_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        onClick={() => handlePageChange(i + 1)}
+                                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                            currentPage === i + 1
+                                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <span className="sr-only">Next</span>
+                                    <ChevronRight size={16} />
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                    {/* Mobile Pagination */}
+                    <div className="flex items-center justify-between sm:hidden w-full">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            Previous
+                        </button>
+                        <span className="text-sm text-gray-700">
+                             Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="relative ml-3 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             )}
         </>

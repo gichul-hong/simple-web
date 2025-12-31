@@ -1,7 +1,13 @@
+'use client';
+
 import { ApplicationList } from "./components/ApplicationList";
+import { NewApplicationModal } from "./components/NewApplicationModal";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -11,13 +17,21 @@ export default function Home() {
             Manage and monitor your deployed applications.
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200"
+        >
           <Plus size={20} />
           New Application
         </button>
       </div>
 
       <ApplicationList />
+      
+      <NewApplicationModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 }
