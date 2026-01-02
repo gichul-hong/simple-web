@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { Application, PaginatedResponse } from '@/types/application';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -19,9 +20,9 @@ export async function GET(request: NextRequest) {
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    // Updated URL pattern: /api/v1/airflow/applications?projectName={projectName}
+    // Updated URL pattern: /api/v1/argocd/applications?projectName={projectName}
     // projectName is now controlled via environment variable
-    const fetchUrl = new URL(`${backendUrl}/api/v1/airflow/applications`);
+    const fetchUrl = new URL(`${backendUrl}/api/v1/argocd/applications`);
     fetchUrl.searchParams.append('projectName', projectName);
 
     const res = await fetch(fetchUrl.toString(), {
@@ -30,8 +31,38 @@ export async function GET(request: NextRequest) {
     });
 
     if (res.ok) {
-        const data = await res.json();
-        return NextResponse.json(data);
+        const rawData = await res.json();
+        
+        // Handle backend returning a raw array instead of PaginatedResponse
+        // We simulate pagination and filtering here if the backend doesn't support it via params for this specific view
+        let apps: Application[] = Array.isArray(rawData) ? rawData : (rawData.items || rawData.data || []);
+
+        const search = searchParams.get('search') || '';
+        if (search) {
+             const lowerSearch = search.toLowerCase();
+             apps = apps.filter(app => 
+                app.name?.toLowerCase().includes(lowerSearch) ||
+                app.project?.toLowerCase().includes(lowerSearch)
+             );
+        }
+
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '12');
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedApps = apps.slice(startIndex, endIndex);
+
+        const response: PaginatedResponse<Application> = {
+            data: paginatedApps,
+            meta: {
+              total: apps.length,
+              page,
+              limit,
+              totalPages: Math.ceil(apps.length / limit),
+            },
+        };
+
+        return NextResponse.json(response);
     }
     
     // If backend returns error (e.g. 404, 500), we might want to propagate it or fallback.
