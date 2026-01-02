@@ -1,6 +1,6 @@
 'use client';
 
-import { Hexagon, LayoutDashboard, Activity } from 'lucide-react';
+import { Hexagon, LayoutDashboard, Activity, ExternalLink as ExternalLinkIcon } from 'lucide-react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -10,6 +10,7 @@ export function Navbar() {
   const pathname = usePathname();
 
   const isActive = (path: string) => pathname === path;
+  const argoCdUrl = process.env.NEXT_PUBLIC_ARGOCD_BASE_URL || 'https://argocd.example.com';
 
   return (
     <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
@@ -49,6 +50,15 @@ export function Navbar() {
                   <Activity size={18} />
                   Monitoring
                 </Link>
+                <a 
+                  href={argoCdUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                >
+                  <ExternalLinkIcon size={18} />
+                  ArgoCD
+                </a>
               </div>
             )}
           </div>
