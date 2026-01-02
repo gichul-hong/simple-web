@@ -1,6 +1,6 @@
 import React from 'react';
 import { Application } from '@/types/application';
-import { ExternalLink, GitBranch, Box, Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle } from 'lucide-react';
+import { ExternalLink, GitBranch, Box, Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle, Wind, Activity, FolderOpen, Github } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import Link from 'next/link';
 
@@ -20,6 +20,12 @@ const statusConfig = {
 export function ApplicationRow({ app }: ApplicationRowProps) {
   const statusInfo = statusConfig[app.status] || statusConfig.Unknown;
   const StatusIcon = statusInfo.icon;
+
+  const githubBaseUrl = process.env.NEXT_PUBLIC_GITHUB_BASE_URL || 'https://github.com';
+  const grafanaBaseUrl = process.env.NEXT_PUBLIC_GRAFANA_BASE_URL || 'https://grafana.example.com';
+
+  const githubUrl = `${githubBaseUrl}/${app.namespace}/airflow-dags`;
+  const grafanaUrl = `${grafanaBaseUrl}?project_name=${app.namespace}`;
 
   return (
     <tr className="group hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-0">
@@ -56,24 +62,49 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
           </div>
       </td>
       <td className="py-4 pl-3 pr-4 sm:pr-6 text-right whitespace-nowrap text-sm font-medium">
-        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Airflow Link */}
             {app.externalURL && (
                 <Link 
                     href={app.externalURL} 
                     target="_blank" 
-                    className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                    title="Open Application"
+                    className="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 transition-colors"
+                    title="Open Airflow"
                 >
-                    <ExternalLink size={16} />
+                    <Wind size={16} />
                 </Link>
             )}
+
+            {/* Grafana Link */}
             <Link 
-                href={app.chartRepoUrl} 
+                href={grafanaUrl}
                 target="_blank"
-                className="text-gray-400 hover:text-gray-900 flex items-center gap-1"
-                title="View Source"
+                className="p-1.5 rounded-md text-orange-600 hover:bg-orange-50 transition-colors"
+                title="Open Grafana"
             >
-                <GitBranch size={16} />
+                <Activity size={16} />
+            </Link>
+
+            {/* FileBrowser Link */}
+            {app.fileBrowserUrl && (
+                <Link 
+                    href={app.fileBrowserUrl}
+                    target="_blank"
+                    className="p-1.5 rounded-md text-amber-600 hover:bg-amber-50 transition-colors"
+                    title="File Browser"
+                >
+                    <FolderOpen size={16} />
+                </Link>
+            )}
+
+            {/* GitHub Link */}
+            <Link 
+                href={githubUrl}
+                target="_blank"
+                className="p-1.5 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
+                title="GitHub Repo"
+            >
+                <Github size={16} />
             </Link>
         </div>
       </td>

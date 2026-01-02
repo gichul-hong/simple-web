@@ -1,6 +1,6 @@
 import React from 'react';
 import { Application } from '@/types/application';
-import { ExternalLink, GitBranch, Box, Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle } from 'lucide-react';
+import { ExternalLink, GitBranch, Box, Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle, Wind, Activity, FolderOpen, Github } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import Link from 'next/link';
 
@@ -20,6 +20,12 @@ const statusConfig = {
 export function ApplicationCard({ app }: ApplicationCardProps) {
   const statusInfo = statusConfig[app.status] || statusConfig.Unknown;
   const StatusIcon = statusInfo.icon;
+
+  const githubBaseUrl = process.env.NEXT_PUBLIC_GITHUB_BASE_URL || 'https://github.com';
+  const grafanaBaseUrl = process.env.NEXT_PUBLIC_GRAFANA_BASE_URL || 'https://grafana.example.com';
+
+  const githubUrl = `${githubBaseUrl}/${app.namespace}/airflow-dags`;
+  const grafanaUrl = `${grafanaBaseUrl}?project_name=${app.namespace}`;
 
   return (
     <div className={cn("rounded-xl border p-6 transition-all hover:shadow-md bg-white", statusInfo.bg)}>
@@ -60,21 +66,48 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-gray-200/60">
+        {/* Airflow Link */}
         {app.externalURL && (
             <Link 
                 href={app.externalURL} 
                 target="_blank" 
-                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                className="p-2 rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
+                title="Open Airflow"
             >
-                Open App <ExternalLink size={14} />
+                <Wind size={18} />
             </Link>
         )}
+
+        {/* Grafana Link */}
         <Link 
-             href={app.chartRepoUrl} 
-             target="_blank"
-             className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline"
+            href={grafanaUrl}
+            target="_blank"
+            className="p-2 rounded-lg text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
+            title="Open Grafana"
         >
-             Repo <GitBranch size={14} />
+            <Activity size={18} />
+        </Link>
+
+        {/* FileBrowser Link */}
+        {app.fileBrowserUrl && (
+            <Link 
+                href={app.fileBrowserUrl}
+                target="_blank"
+                className="p-2 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100 transition-colors"
+                title="File Browser"
+            >
+                <FolderOpen size={18} />
+            </Link>
+        )}
+
+        {/* GitHub Link */}
+        <Link 
+             href={githubUrl}
+             target="_blank"
+             className="p-2 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+             title="GitHub Repo"
+        >
+             <Github size={18} />
         </Link>
       </div>
     </div>
