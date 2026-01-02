@@ -62,7 +62,7 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
           </div>
       </td>
       <td className="py-4 pl-3 pr-4 sm:pr-6 text-right whitespace-nowrap text-sm font-medium">
-        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-end gap-2">
             {/* Airflow Link */}
             {app.externalURL && (
                 <Link 

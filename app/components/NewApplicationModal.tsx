@@ -79,12 +79,27 @@ export function NewApplicationModal({ isOpen, onClose }: NewApplicationModalProp
     <Modal isOpen={isOpen} onClose={onClose} title="Create New Application">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="p-4 rounded-lg bg-red-50 border border-red-200 space-y-1">
-            <div className="flex items-center gap-2 text-red-700 font-bold text-sm">
-              <AlertCircle size={16} />
-              {error.Code}: {error.Error}
+          <div className="rounded-xl bg-red-50 border border-red-100 p-4 shadow-sm transition-all animate-in fade-in slide-in-from-top-2">
+            <div className="flex gap-4">
+              <div className="shrink-0">
+                 <div className="p-2 bg-red-100 rounded-full">
+                    <AlertCircle className="text-red-600" size={20} />
+                 </div>
+              </div>
+              <div className="flex-1 space-y-1.5 pt-0.5">
+                 <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-semibold text-red-900 text-sm">
+                        {error.Error}
+                    </h4>
+                    <span className="text-[10px] font-mono bg-white text-red-600 px-2 py-0.5 rounded-full border border-red-100 shadow-sm uppercase tracking-wide">
+                        {error.Code}
+                    </span>
+                 </div>
+                 <p className="text-sm text-red-600 leading-relaxed">
+                    {error.Message}
+                 </p>
+              </div>
             </div>
-            <p className="text-sm text-red-600 pl-6">{error.Message}</p>
           </div>
         )}
 
