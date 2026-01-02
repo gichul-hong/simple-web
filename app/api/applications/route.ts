@@ -3,29 +3,28 @@ import { getToken } from 'next-auth/jwt';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080'; // Default or Env
-
+  const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
+  const projectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
+  
   // Securely retrieve the token from the HTTP-only cookie
-  // This works even if the token is not exposed in the client-side session
   const token = await getToken({ req: request });
   const accessToken = token?.accessToken;
 
   try {
-    // Attempt to fetch from the real backend
-    // Use a short timeout for the backend check if you want to fail fast to dummy data,
-    // but standard fetch is fine.
-    // However, if the backend is not running, fetch will throw.
-    
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
     };
 
-    // Attach the Bearer token if it exists
     if (accessToken) {
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    const res = await fetch(`${backendUrl}/applications?${searchParams.toString()}`, {
+    // Updated URL pattern: /api/v1/airflow/applications?projectName={projectName}
+    // projectName is now controlled via environment variable
+    const fetchUrl = new URL(`${backendUrl}/api/v1/airflow/applications`);
+    fetchUrl.searchParams.append('projectName', projectName);
+
+    const res = await fetch(fetchUrl.toString(), {
         headers,
         cache: 'no-store',
     });
