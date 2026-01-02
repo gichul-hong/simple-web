@@ -1,23 +1,58 @@
 'use client';
 
-import { Hexagon } from 'lucide-react';
+import { Hexagon, LayoutDashboard, Activity } from 'lucide-react';
 import { signIn, signOut, useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export function Navbar() {
   const { data: session } = useSession();
+  const pathname = usePathname();
+
+  const isActive = (path: string) => pathname === path;
 
   return (
     <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-xl text-white shadow-md shadow-blue-200/50">
-                <Hexagon size={24} strokeWidth={2.5} className="rotate-90" />
-            </div>
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                Hyosang.Ahn
-            </span>
+          <div className="flex items-center gap-8">
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-xl text-white shadow-md shadow-blue-200/50">
+                  <Hexagon size={24} strokeWidth={2.5} className="rotate-90" />
+              </div>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                  Hyosang.Ahn
+              </span>
+            </Link>
+
+            {session && (
+              <div className="hidden md:flex items-center gap-1">
+                <Link 
+                  href="/" 
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive('/') 
+                      ? 'bg-blue-50 text-blue-700' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <LayoutDashboard size={18} />
+                  Applications
+                </Link>
+                <Link 
+                  href="/monitoring" 
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive('/monitoring') 
+                      ? 'bg-blue-50 text-blue-700' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <Activity size={18} />
+                  Monitoring
+                </Link>
+              </div>
+            )}
           </div>
+
           <div className="flex items-center gap-4">
              {session ? (
                  <div className="flex items-center gap-4">
