@@ -26,13 +26,19 @@ export async function POST(request: NextRequest) {
         cache: 'no-store',
     });
 
-    const data = await res.json();
+    const responseText = await res.text();
+    let responseData;
+    try {
+        responseData = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+        responseData = { Message: responseText || "Success" };
+    }
 
     if (res.ok) {
-        return NextResponse.json(data);
+        return NextResponse.json(responseData || { success: true });
     } else {
         // Return the structured error from backend
-        return NextResponse.json(data, { status: res.status });
+        return NextResponse.json(responseData, { status: res.status });
     }
 
   } catch (error) {
