@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080'; // Default or Env
+
+  // Securely retrieve the token from the HTTP-only cookie
+  // This works even if the token is not exposed in the client-side session
+  const token = await getToken({ req: request });
+  const accessToken = token?.accessToken;
 
   try {
     // Attempt to fetch from the real backend
@@ -10,13 +16,17 @@ export async function GET(request: NextRequest) {
     // but standard fetch is fine.
     // However, if the backend is not running, fetch will throw.
     
-    // We can explicitly check for a flag or just catch the error.
-    // Given "Make dummy data go down for testing", fallback on error is a good strategy.
-    
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
+
+    // Attach the Bearer token if it exists
+    if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
     const res = await fetch(`${backendUrl}/applications?${searchParams.toString()}`, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers,
         cache: 'no-store',
     });
 
