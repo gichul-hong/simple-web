@@ -1,0 +1,169 @@
+'use client';
+
+import React, { useEffect, useState, useCallback } from 'react';
+import { MonitoredApplication } from '@/types/monitoring';
+import { PaginatedResponse } from '@/types/application';
+import { MonitoringCard } from './MonitoringCard';
+import { MonitoringRow } from './MonitoringRow';
+import { Search, RefreshCw, ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon } from 'lucide-react';
+
+export function MonitoringList() {
+  const [apps, setApps] = useState<MonitoredApplication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 60; // Increased to show more items at once for monitoring context
+
+  const fetchMonitoringData = useCallback(async (page: number, searchTerm: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: itemsPerPage.toString(),
+        search: searchTerm,
+      });
+      
+      const response = await fetch(`/api/monitoring?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch metrics');
+      
+      const data: PaginatedResponse<MonitoredApplication> = await response.json();
+      setApps(data.data);
+      setTotalPages(data.meta.totalPages);
+      setCurrentPage(data.meta.page);
+    } catch (err) {
+        setError('Failed to load monitoring data');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        fetchMonitoringData(1, filter);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [filter, fetchMonitoringData]);
+
+  const handlePageChange = (newPage: number) => {
+      if (newPage >= 1 && newPage <= totalPages) {
+          fetchMonitoringData(newPage, filter);
+      }
+  };
+
+  return (
+    <div className="space-y-6">
+       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full sm:w-96">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input 
+                type="text" 
+                placeholder="Search monitored apps..." 
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+            />
+        </div>
+        <div className="flex items-center gap-2">
+            <div className="flex items-center p-1 bg-gray-100 rounded-lg border border-gray-200">
+                <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    title="Grid View"
+                >
+                    <LayoutGrid size={16} />
+                </button>
+                <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    title="List View"
+                >
+                    <ListIcon size={16} />
+                </button>
+            </div>
+            <button 
+                onClick={() => fetchMonitoringData(currentPage, filter)} 
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                Refresh Metrics
+            </button>
+        </div>
+      </div>
+
+      {loading && !apps.length ? (
+        viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                    <div key={i} className="h-64 rounded-xl border bg-gray-50 animate-pulse" />
+                ))}
+            </div>
+        ) : (
+            <div className="space-y-4">
+                 {[...Array(8)].map((_, i) => (
+                    <div key={i} className="h-20 rounded-lg border bg-gray-50 animate-pulse" />
+                ))}
+            </div>
+        )
+      ) : (
+        <>
+        {viewMode === 'grid' ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {apps.map((app) => (
+                    <MonitoringCard key={app.name} app={app} />
+                ))}
+             </div>
+        ) : (
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50/50">
+                            <tr>
+                                <th className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:pl-6">Application</th>
+                                <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S3 Usage</th>
+                                <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DB Usage</th>
+                                <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DAG Runs (OK/KO)</th>
+                                <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resources (Req/Quota)</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                            {apps.map((app) => (
+                                <MonitoringRow key={app.name} app={app} />
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )}
+        </>
+      )}
+      
+      {/* Simple Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+            >
+                <ChevronLeft size={20} />
+            </button>
+            <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+             <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+            >
+                <ChevronRight size={20} />
+            </button>
+        </div>
+      )}
+    </div>
+  );
+}
