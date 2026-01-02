@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Modal } from './Modal';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 
 interface NewApplicationModalProps {
@@ -10,10 +10,19 @@ interface NewApplicationModalProps {
   onClose: () => void;
 }
 
+interface BackendError {
+  Message: string;
+  Code: string;
+  Error: string;
+  Status: number;
+}
+
 export function NewApplicationModal({ isOpen, onClose }: NewApplicationModalProps) {
   const [projectId, setProjectId] = useState('');
+  const [nasVolumeSize, setNasVolumeSize] = useState<number>(20);
   const [isTouched, setIsTouched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<BackendError | null>(null);
 
   const isValid = projectId.startsWith('aip-');
   const showError = isTouched && !isValid;
@@ -23,15 +32,42 @@ export function NewApplicationModal({ isOpen, onClose }: NewApplicationModalProp
     if (!isValid) return;
 
     setLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLoading(false);
-    
-    // Reset and close
-    setProjectId('');
-    setIsTouched(false);
-    onClose();
-    // In a real app, you would trigger a refresh of the list here
+    setError(null);
+
+    try {
+      const response = await fetch('/api/applications/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: projectId,
+          membershipLevel: 'l1', // Fixed as requested
+          nasVolumeSizeInGb: nasVolumeSize
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data);
+      } else {
+        // Success
+        setProjectId('');
+        setNasVolumeSize(20);
+        setIsTouched(false);
+        onClose();
+        // Trigger a refresh of the page to see the new item
+        window.location.reload();
+      }
+    } catch (err) {
+      setError({
+        Message: "Connection failed",
+        Code: "CLIENT_ERROR",
+        Error: "Could not reach the server",
+        Status: 0
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +78,16 @@ export function NewApplicationModal({ isOpen, onClose }: NewApplicationModalProp
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create New Application">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="p-4 rounded-lg bg-red-50 border border-red-200 space-y-1">
+            <div className="flex items-center gap-2 text-red-700 font-bold text-sm">
+              <AlertCircle size={16} />
+              {error.Code}: {error.Error}
+            </div>
+            <p className="text-sm text-red-600 pl-6">{error.Message}</p>
+          </div>
+        )}
+
         <div className="space-y-2">
           <label htmlFor="projectId" className="block text-sm font-medium text-gray-700">
             Project ID
@@ -81,6 +127,25 @@ export function NewApplicationModal({ isOpen, onClose }: NewApplicationModalProp
           <p className="text-xs text-gray-500">
             Enter the unique identifier for your project. Must start with prefix <code>aip-</code>.
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="nasVolume" className="block text-sm font-medium text-gray-700">
+            NAS Volume Size (GB)
+          </label>
+          <input
+            type="number"
+            id="nasVolume"
+            min="1"
+            max="1000"
+            value={nasVolumeSize}
+            onChange={(e) => setNasVolumeSize(parseInt(e.target.value) || 0)}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-colors"
+          />
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Info size={14} />
+            Membership level is fixed to <strong>l1</strong>.
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
