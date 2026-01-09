@@ -5,6 +5,7 @@ import { Application, PaginatedResponse } from '@/types/application';
 import { ApplicationCard } from './ApplicationCard';
 import { ApplicationRow } from './ApplicationRow';
 import { LayoutGrid, List as ListIcon, Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { signIn } from 'next-auth/react';
 
 export function ApplicationList() {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -30,6 +31,12 @@ export function ApplicationList() {
       });
       
       const response = await fetch(`/api/applications?${params.toString()}`);
+      
+      if (response.status === 401) {
+        signIn();
+        return;
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch applications');
       }

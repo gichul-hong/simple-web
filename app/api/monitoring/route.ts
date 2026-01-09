@@ -50,6 +50,10 @@ export async function GET(request: NextRequest) {
 
     const res = await fetch(fetchUrl.toString(), { headers, cache: 'no-store' });
     
+    if (res.status === 401) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     if (res.ok) {
         const text = await res.text();
         const rawData = text ? JSON.parse(text) : [];

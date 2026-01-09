@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Modal } from './Modal';
 import { AlertCircle, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
+import { signIn } from 'next-auth/react';
 
 interface NewApplicationModalProps {
   isOpen: boolean;
@@ -44,6 +45,11 @@ export function NewApplicationModal({ isOpen, onClose }: NewApplicationModalProp
           nasVolumeSizeInGb: nasVolumeSize
         }),
       });
+
+      if (response.status === 401) {
+        signIn();
+        return;
+      }
 
       const data = await response.json();
 

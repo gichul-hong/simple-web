@@ -6,6 +6,7 @@ import { PaginatedResponse } from '@/types/application';
 import { MonitoringCard } from './MonitoringCard';
 import { MonitoringRow } from './MonitoringRow';
 import { Search, RefreshCw, ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon } from 'lucide-react';
+import { signIn } from 'next-auth/react';
 
 export function MonitoringList() {
   const [apps, setApps] = useState<MonitoredApplication[]>([]);
@@ -30,6 +31,12 @@ export function MonitoringList() {
       });
       
       const response = await fetch(`/api/monitoring?${params.toString()}`);
+      
+      if (response.status === 401) {
+        signIn();
+        return;
+      }
+
       if (!response.ok) throw new Error('Failed to fetch metrics');
       
       const data: PaginatedResponse<MonitoredApplication> = await response.json();

@@ -30,6 +30,10 @@ export async function GET(request: NextRequest) {
         cache: 'no-store',
     });
 
+    if (res.status === 401) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     if (res.ok) {
         const rawData = await res.json();
         
