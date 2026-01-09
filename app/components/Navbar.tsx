@@ -87,7 +87,7 @@ export function Navbar() {
                     onClick={() => signIn('keycloak')}
                     className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
                  >
-                     Sign In
+                     Sign In with Keycloak
                  </button>
              )}
           </div>

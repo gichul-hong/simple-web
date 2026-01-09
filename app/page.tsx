@@ -31,10 +31,10 @@ export default function Home() {
           </p>
         </div>
         <button
-          onClick={() => signIn("github")}
+          onClick={() => signIn("keycloak")}
           className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200"
         >
-          Sign In with GitHub
+          Sign In with Keycloak
         </button>
       </div>
     );
