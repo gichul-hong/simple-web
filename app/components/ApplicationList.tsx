@@ -18,15 +18,15 @@ export function ApplicationList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 12;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const fetchApplications = useCallback(async (page: number, searchTerm: string) => {
+  const fetchApplications = useCallback(async (page: number, searchTerm: string, limit: number) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: itemsPerPage.toString(),
+        limit: limit.toString(),
         search: searchTerm,
       });
       
@@ -56,19 +56,19 @@ export function ApplicationList() {
     }
   }, []);
 
-  // Debounce search
+  // Debounce search and handle limit change
   useEffect(() => {
     const timer = setTimeout(() => {
-        fetchApplications(1, filter);
+        fetchApplications(1, filter, itemsPerPage);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [filter, fetchApplications]);
+  }, [filter, itemsPerPage, fetchApplications]);
 
   // Handle page change
   const handlePageChange = (newPage: number) => {
       if (newPage >= 1 && newPage <= totalPages) {
-          fetchApplications(newPage, filter);
+          fetchApplications(newPage, filter, itemsPerPage);
       }
   };
 
@@ -103,7 +103,7 @@ export function ApplicationList() {
                 </button>
             </div>
             <button 
-                onClick={() => fetchApplications(currentPage, filter)} 
+                onClick={() => fetchApplications(currentPage, filter, itemsPerPage)} 
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
             >
@@ -122,13 +122,13 @@ export function ApplicationList() {
       {loading && !applications.length ? (
         viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
+                {[...Array(itemsPerPage)].map((_, i) => (
                     <div key={i} className="h-64 rounded-xl border bg-gray-50 animate-pulse" />
                 ))}
             </div>
         ) : (
             <div className="space-y-4">
-                 {[1, 2, 3, 4, 5, 6].map((i) => (
+                 {[...Array(itemsPerPage)].map((_, i) => (
                     <div key={i} className="h-20 rounded-lg border bg-gray-50 animate-pulse" />
                 ))}
             </div>
@@ -174,26 +174,38 @@ export function ApplicationList() {
             )}
             
             {/* Pagination Controls */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p className="text-sm text-gray-700">
-                                Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
-                                <span className="font-medium">{totalItems}</span> results
-                            </p>
+            {totalPages > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 pt-6 gap-4">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                         <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-700">Rows per page:</span>
+                            <select
+                                value={itemsPerPage}
+                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                className="block w-full rounded-md border-gray-300 py-1.5 text-base leading-5 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                            >
+                                <option value={10}>10</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                            </select>
                         </div>
-                        <div>
-                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                <button
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <span className="sr-only">Previous</span>
-                                    <ChevronLeft size={16} />
-                                </button>
-                                {[...Array(totalPages)].map((_, i) => (
+                        <p className="text-sm text-gray-700">
+                            Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
+                            <span className="font-medium">{totalItems}</span> results
+                        </p>
+                    </div>
+                    <div>
+                        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <span className="sr-only">Previous</span>
+                                <ChevronLeft size={16} />
+                            </button>
+                            {totalPages <= 7 ? (
+                                [...Array(totalPages)].map((_, i) => (
                                     <button
                                         key={i + 1}
                                         onClick={() => handlePageChange(i + 1)}
@@ -205,37 +217,22 @@ export function ApplicationList() {
                                     >
                                         {i + 1}
                                     </button>
-                                ))}
-                                <button
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <span className="sr-only">Next</span>
-                                    <ChevronRight size={16} />
-                                </button>
-                            </nav>
-                        </div>
-                    </div>
-                    {/* Mobile Pagination */}
-                    <div className="flex items-center justify-between sm:hidden w-full">
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                        >
-                            Previous
-                        </button>
-                        <span className="text-sm text-gray-700">
-                             Page {currentPage} of {totalPages}
-                        </span>
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="relative ml-3 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                        >
-                            Next
-                        </button>
+                                ))
+                            ) : (
+                                // Simplified pagination for many pages
+                                <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                            )}
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <span className="sr-only">Next</span>
+                                <ChevronRight size={16} />
+                            </button>
+                        </nav>
                     </div>
                 </div>
             )}

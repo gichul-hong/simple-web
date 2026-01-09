@@ -84,8 +84,8 @@ export function Navbar() {
                  </div>
              ) : (
                  <button 
-                    onClick={() => signIn('github')}
-                    className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                    onClick={() => signIn('keycloak')}
+                    className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
                  >
                      Sign In
                  </button>
