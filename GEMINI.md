@@ -1,63 +1,43 @@
-# ArgoDash (Simple Web) Context
+# Nexus Ops Dashboard Context
 
 ## Project Overview
-This is a Next.js-based dashboard for managing and deploying applications via ArgoCD (Airflow focus). It is designed to run in a closed network environment (air-gapped), requiring offline resources and strict security handling.
+Nexus Ops(구 ArgoDash)는 ArgoCD 기반의 애플리케이션 배포 관리 및 Airflow 모니터링을 위한 Next.js 웹 대시보드입니다. 폐쇄망 환경을 고려하여 설계되었으며, 유틸리티 도구(JWT Parser, Formatter)를 내장하고 있습니다.
 
 ## Tech Stack
 - **Framework**: Next.js 15+ (App Router)
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
-- **Auth**: NextAuth.js v4 (GitHub Provider configured, migrating to Keycloak)
-- **Fonts**: Local Geist Sans/Mono (No external Google Fonts calls)
+- **Auth**: NextAuth.js v4 (Keycloak Provider)
+- **State/Data**: React Hooks + Fetch API (BFF Pattern)
 
-## Key Architectures
+## Key Features & Architectures
 
-### 1. Authentication (Security)
-- **Provider**: Currently GitHub.
-- **Token Handling**:
-  - **Client-side**: Browser only holds the NextAuth encrypted session cookie.
-  - **Server-side (API Routes)**: Next.js API routes decrypt the session using `getToken()`, extract the upstream `access_token`, and attach it as a `Bearer` header to backend requests.
-  - **Constraint**: Access tokens are **never** exposed to the client-side JavaScript.
+### 1. Authentication (RBAC & Toggle)
+- **Env Toggle**: `NEXT_PUBLIC_AUTH_ENABLED` 변수로 인증 활성화 여부 제어 가능. `false`일 경우 'Dev Mode'로 동작하여 로그인 없이 접근 가능.
+- **RBAC**: 인증 활성화 시, Keycloak 로그인 사용자의 `groups` 클레임에 `AIP_AIRFLOW_ADMIN` 그룹이 있어야 로그인 성공. (없을 시 Access Denied)
+- **Session**: Access Token은 서버 사이드(API Route)에서만 복호화되어 백엔드 요청 헤더에 사용됨.
 
-### 2. API Proxy Pattern (BFF)
-- **Frontend**: Calls internal Next.js API `/api/applications` or `/api/applications/create`.
-- **Next.js Server**: Proxies request to the real backend.
-- **Backend URL**: `${BACKEND_API_URL}/api/v1/argocd/applications` (GET) or `${BACKEND_API_URL}/api/v1/airflow/applications` (POST).
-- **Response Handling Rule**: 
-  - **Success (200)**: Often returns an **empty body**. APIs must read `text()` first and only parse JSON if content exists.
-  - **Error (4xx/5xx)**: Returns JSON with `{ Code, Error, Message }`.
-- **Project Scope**: `projectName` is injected from env `ARGOCD_PROJECT_NAME` (default: `airflow-pools`).
-- **Fallback**: If the real backend fails (GET only), it automatically falls back to `/api/application-dummy` for testing.
+### 2. Dashboard Views (Applications & Monitoring)
+- **ListView Default**: 그리드 뷰 대신 리스트 뷰를 기본으로 사용.
+- **Server-side Sorting**: API 레벨에서 정렬 파라미터(`sortBy`, `sortOrder`)를 처리.
+    - 백엔드 데이터와 더미 데이터 모두 공통 정렬/페이징 로직 적용.
+    - **Applications**: 이름, 상태, 프로젝트, 생성일 기준 정렬.
+    - **Monitoring**: Metrics(S3, DB, DAG Runs) 기준 정렬.
+- **External Links**: 각 앱별 ArgoCD, Grafana, FileBrowser, GitHub 링크 제공.
 
-### 3. Application Links
-The dashboard provides 4 distinct external links for each application:
-1.  **Airflow**: `app.externalURL` (Icon: Wind, Blue)
-2.  **Grafana**: `${NEXT_PUBLIC_GRAFANA_BASE_URL}?project_name=${namespace}` (Icon: Activity, Orange)
-3.  **FileBrowser**: `app.fileBrowserUrl` (Icon: FolderOpen, Amber)
-4.  **GitHub**: `${NEXT_PUBLIC_GITHUB_BASE_URL}/${namespace}/airflow-dags` (Icon: Github, Gray)
+### 3. Utilities (No Auth Required)
+인증 여부와 관계없이 항상 접근 가능한 도구 모음 (`/utils`).
+- **JWT Parser**: JWT 토큰 디코딩, Header/Payload/Signature 시각화, JSON Pretty Print.
+- **Formatter**: JSON/YAML 자동 감지 및 포맷팅, 구문 강조(Syntax Highlighting).
 
-### 4. Offline / Air-gapped Support
-- **Fonts**: `next/font/google` replaced with `next/font/local`. Font files (`.woff2`) are stored in `app/fonts/`.
-- **Assets**: All critical assets must be local.
-
-## Features & UI
-- **Dashboard**:
-  - Grid/List view toggle.
-  - Action buttons in List view are always visible (no hover required).
-  - Search simulates filtering on the client side (when using raw array response).
-- **New Application**:
-  - Modal with `ProjectId` (must start with `aip-`) and `NAS Volume Size` (default: 20GB).
-  - `MembershipLevel` fixed to `l1`.
-  - Rich error display with Badge/Title/Message layout.
-- **Navigation**:
-  - Links: Applications, Monitoring, ArgoCD (External).
-  - ArgoCD Link: Uses `NEXT_PUBLIC_ARGOCD_BASE_URL`.
+### 4. API Proxy (BFF)
+- **Path**: `/api/applications`, `/api/monitoring`
+- **Logic**: Next.js 서버가 실제 백엔드 API를 호출.
+- **Fallback**: 백엔드 연결 실패 시 자동으로 내장된 Dummy Data를 반환하여 UI 개발/테스트 용이성 확보.
 
 ## Environment Variables
-- `BACKEND_API_URL`: Upstream API URL (default: `http://localhost:8080`).
-- `ARGOCD_PROJECT_NAME`: Project scope for fetching apps (default: `airflow-pools`).
-- `NEXT_PUBLIC_ARGOCD_BASE_URL`: Base URL for ArgoCD UI.
-- `NEXT_PUBLIC_GITHUB_BASE_URL`: Base URL for GitHub links.
-- `NEXT_PUBLIC_GRAFANA_BASE_URL`: Base URL for Grafana links.
-- `GITHUB_ID` / `GITHUB_SECRET`: OAuth credentials.
-- `NEXTAUTH_SECRET`: Session encryption key.
+`.env.sample` 파일 참조.
+- `BACKEND_API_URL`: 백엔드 주소
+- `NEXT_PUBLIC_AUTH_ENABLED`: 인증 토글
+- `KEYCLOAK_*`: SSO 설정
+- `NEXT_PUBLIC_*_BASE_URL`: 외부 링크 베이스 URL
