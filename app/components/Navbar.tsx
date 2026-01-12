@@ -25,7 +25,7 @@ export function Navbar() {
                   <Hexagon size={24} strokeWidth={2.5} className="rotate-90" />
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                  Hyosang.Ahn
+                  Nexus Ops
               </span>
             </Link>
 
