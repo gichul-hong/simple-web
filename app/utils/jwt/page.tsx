@@ -81,6 +81,50 @@ export default function JwtParserPage() {
     setToken('');
   };
 
+  const JsonValueRenderer = ({ rKey, value }: { rKey: string, value: any }) => {
+    const isTimestamp = ['exp', 'iat', 'nbf', 'auth_time'].includes(rKey) && typeof value === 'number';
+    
+    if (isTimestamp) {
+        const dateStr = new Date(value * 1000).toUTCString();
+        return (
+            <span 
+                className="font-bold cursor-help underline decoration-dotted decoration-2 underline-offset-2" 
+                title={dateStr}
+            >
+                {value}
+            </span>
+        );
+    }
+    
+    if (typeof value === 'string') return <span>"{value}"</span>;
+    if (value === null) return <span>null</span>;
+    if (typeof value === 'boolean') return <span>{value.toString()}</span>;
+    if (Array.isArray(value)) return <span>[{value.length} items]</span>; // Simplified for array
+    if (typeof value === 'object') return <span>{'{...}'}</span>; // Simplified for nested object
+
+    return <span>{value}</span>;
+  };
+
+  const JsonViewer = ({ data, colorClass }: { data: any, colorClass: string }) => {
+    if (!data) return <span className="text-gray-300 italic">waiting for input...</span>;
+    
+    return (
+        <div className={`font-mono text-sm ${colorClass} whitespace-pre-wrap break-all`}>
+            {'{'}
+            <div className="pl-4">
+                {Object.entries(data).map(([key, value], index, arr) => (
+                <div key={key}>
+                    <span className="font-semibold">"{key}"</span>:{" "}
+                    <JsonValueRenderer rKey={key} value={value} />
+                    {index < arr.length - 1 && ","}
+                </div>
+                ))}
+            </div>
+            {'}'}
+        </div>
+    );
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -163,9 +207,7 @@ export default function JwtParserPage() {
               <span className="text-xs font-mono text-gray-400">Data</span>
             </div>
             <div className="p-4 relative group">
-               <pre className="font-mono text-sm text-purple-600 whitespace-pre-wrap break-all">
-                {payload ? JSON.stringify(payload, null, 2) : <span className="text-gray-300 italic">waiting for input...</span>}
-               </pre>
+               <JsonViewer data={payload} colorClass="text-purple-600" />
                 {payload && (
                    <button 
                         onClick={() => handleCopy(JSON.stringify(payload, null, 2))}
