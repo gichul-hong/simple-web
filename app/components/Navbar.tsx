@@ -8,9 +8,12 @@ import { usePathname } from 'next/navigation';
 export function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
 
   const isActive = (path: string) => pathname === path;
   const argoCdUrl = process.env.NEXT_PUBLIC_ARGOCD_BASE_URL || 'https://argocd.example.com';
+
+  const showNav = !authEnabled || session;
 
   return (
     <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
@@ -26,7 +29,7 @@ export function Navbar() {
               </span>
             </Link>
 
-            {session && (
+            {showNav && (
               <div className="hidden md:flex items-center gap-1">
                 <Link 
                   href="/" 
@@ -94,12 +97,18 @@ export function Navbar() {
                      </button>
                  </div>
              ) : (
-                 <button 
-                    onClick={() => signIn('keycloak')}
-                    className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
-                 >
-                     Sign In with Keycloak
-                 </button>
+                 authEnabled ? (
+                    <button 
+                        onClick={() => signIn('keycloak')}
+                        className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+                    >
+                        Sign In with Keycloak
+                    </button>
+                 ) : (
+                    <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-xs font-medium text-gray-500">
+                        Dev Mode (Auth Disabled)
+                    </div>
+                 )
              )}
           </div>
         </div>

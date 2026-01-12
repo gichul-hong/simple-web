@@ -7,18 +7,21 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
     const projectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
     const token = await getToken({ req: request });
     const accessToken = token?.accessToken;
+    const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
 
     // 1. Try fetching from Real Backend
     try {
         const headers: HeadersInit = { 'Content-Type': 'application/json' };
-        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
 
         const fetchUrl = new URL(`${backendUrl}/api/v1/argocd/applications`);
         fetchUrl.searchParams.append('projectName', projectName);
 
         const res = await fetch(fetchUrl.toString(), { headers, cache: 'no-store' });
 
-        if (res.status === 401) throw new Error('Unauthorized');
+        if (authEnabled && res.status === 401) throw new Error('Unauthorized');
         if (!res.ok) throw new Error(`Backend unavailable: ${res.status}`);
 
         const rawData = await res.json();

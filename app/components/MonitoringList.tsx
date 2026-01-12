@@ -41,7 +41,8 @@ export function MonitoringList() {
       
       const response = await fetch(`/api/monitoring?${params.toString()}`);
       
-      if (response.status === 401) {
+      const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+      if (authEnabled && response.status === 401) {
         signIn();
         return;
       }

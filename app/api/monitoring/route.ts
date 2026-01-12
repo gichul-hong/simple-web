@@ -36,6 +36,7 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
     const projectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
     const token = await getToken({ req: request });
     const accessToken = token?.accessToken;
+    const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
 
     try {
         const headers: HeadersInit = { 'Content-Type': 'application/json' };
@@ -45,9 +46,12 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
         fetchUrl.searchParams.append('projectName', projectName);
 
         const res = await fetch(fetchUrl.toString(), { headers, cache: 'no-store' });
+        
+        if (authEnabled && res.status === 401) throw new Error('Unauthorized');
         if (!res.ok) throw new Error('Backend unavailable');
 
         const text = await res.text();
+
         const rawData = text ? JSON.parse(text) : [];
         return Array.isArray(rawData) ? rawData : (rawData.items || rawData.data || []);
     } catch (error) {
