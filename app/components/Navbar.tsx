@@ -125,16 +125,6 @@ export function Navbar() {
               </div>
             )}
           </div>
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-                >
-                  <ExternalLinkIcon size={18} />
-                  ArgoCD
-                </a>
-              </div>
-            )}
-          </div>
 
           <div className="flex items-center gap-4">
              {session ? (
