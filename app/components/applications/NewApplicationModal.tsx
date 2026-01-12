@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal } from './Modal';
+import { Modal } from '../ui/Modal';
 import { AlertCircle, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import { signIn } from 'next-auth/react';

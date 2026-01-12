@@ -1,6 +1,6 @@
 'use client';
 
-import { MonitoringList } from "../components/MonitoringList";
+import { MonitoringList } from "../components/monitoring/MonitoringList";
 
 export default function MonitoringPage() {
     return (

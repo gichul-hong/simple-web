@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Hexagon, LayoutDashboard, Activity, FileCode, ExternalLink as ExternalLinkIcon, Wrench, ChevronDown, FileJson } from 'lucide-react';
+import { Cat, LayoutDashboard, Activity, FileCode, ExternalLink as ExternalLinkIcon, Wrench, ChevronDown, FileJson } from 'lucide-react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -35,11 +35,11 @@ export function Navbar() {
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-xl text-white shadow-md shadow-blue-200/50">
-                  <Hexagon size={24} strokeWidth={2.5} className="rotate-90" />
+              <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-2 rounded-xl text-white shadow-md shadow-orange-200/50">
+                  <Cat size={24} strokeWidth={2.5} />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                  Nexus Ops
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-amber-600">
+                  MeowMeow
               </span>
             </Link>
 
@@ -49,7 +49,7 @@ export function Navbar() {
                   href="/" 
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/') 
-                      ? 'bg-blue-50 text-blue-700' 
+                      ? 'bg-orange-50 text-orange-700' 
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
@@ -60,7 +60,7 @@ export function Navbar() {
                   href="/monitoring" 
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/monitoring') 
-                      ? 'bg-blue-50 text-blue-700' 
+                      ? 'bg-orange-50 text-orange-700' 
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
@@ -76,7 +76,7 @@ export function Navbar() {
                     onClick={() => setIsUtilsOpen(!isUtilsOpen)}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors outline-none ${
                         isUtilsActive
-                        ? 'bg-blue-50 text-blue-700' 
+                        ? 'bg-orange-50 text-orange-700' 
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                 >
@@ -91,7 +91,7 @@ export function Navbar() {
                             href="/utils/jwt" 
                             onClick={() => setIsUtilsOpen(false)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                isActive('/utils/jwt') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                isActive('/utils/jwt') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                             }`}
                         >
                             <FileCode size={16} />
@@ -101,7 +101,7 @@ export function Navbar() {
                             href="/utils/formatter" 
                             onClick={() => setIsUtilsOpen(false)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                isActive('/utils/formatter') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                isActive('/utils/formatter') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                             }`}
                         >
                             <FileJson size={16} />
@@ -149,7 +149,7 @@ export function Navbar() {
                  authEnabled ? (
                     <button 
                         onClick={() => signIn('keycloak')}
-                        className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+                        className="text-sm font-medium text-gray-600 hover:text-orange-600 transition-colors"
                     >
                         Sign In with Keycloak
                     </button>

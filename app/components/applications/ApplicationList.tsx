@@ -217,18 +217,18 @@ export function ApplicationList() {
                 <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 pt-6 gap-4">
                     <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-700">Rows per page:</span>
+                            <span className="text-sm text-gray-700 whitespace-nowrap">Rows per page:</span>
                             <select
                                 value={itemsPerPage}
                                 onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                className="block w-full rounded-md border-gray-300 py-1.5 text-base leading-5 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                                className="block w-20 rounded-md border-gray-300 py-1.5 text-base leading-5 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
                             >
                                 <option value={10}>10</option>
                                 <option value={50}>50</option>
                                 <option value={100}>100</option>
                             </select>
                         </div>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-gray-700 whitespace-nowrap">
                             Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
                             <span className="font-medium">{totalItems}</span> results
                         </p>

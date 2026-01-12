@@ -1,11 +1,16 @@
-# Nexus Ops Dashboard Context
+# MeowMeow Dashboard Context
 
 ## Project Overview
-Nexus Ops(구 ArgoDash)는 ArgoCD 기반의 애플리케이션 배포 관리 및 Airflow 모니터링을 위한 Next.js 웹 대시보드입니다. 폐쇄망 환경을 고려하여 설계되었으며, 유틸리티 도구(JWT Parser, Formatter)를 내장하고 있습니다.
+MeowMeow(구 Nexus Ops, ArgoDash)는 ArgoCD 기반의 애플리케이션 배포 관리 및 Airflow 모니터링을 위한, 고양이 테마의 귀여운 Next.js 웹 대시보드입니다. 폐쇄망 환경을 고려하여 설계되었으며, 유틸리티 도구(JWT Parser, Formatter)를 내장하고 있습니다.
+
+## Development Guidelines
+**[IMPORTANT]**
+- **Documentation Sync**: 프로젝트의 구조, 설정, 주요 코드가 변경될 때마다 반드시 `README.md` 파일을 최신 상태로 갱신해야 합니다.
+- **Context Log**: 이 파일(`GEMINI.md`)은 AI 에이전트의 컨텍스트 유지를 위해 중요합니다. 주요 변경 사항이나 아키텍처 결정 사항을 기록해 주세요.
 
 ## Tech Stack
 - **Framework**: Next.js 15+ (App Router)
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS (Cat Theme: Orange/Amber)
 - **Icons**: Lucide React
 - **Auth**: NextAuth.js v4 (Keycloak Provider)
 - **State/Data**: React Hooks + Fetch API (BFF Pattern)
@@ -34,6 +39,13 @@ Nexus Ops(구 ArgoDash)는 ArgoCD 기반의 애플리케이션 배포 관리 및
 - **Path**: `/api/applications`, `/api/monitoring`
 - **Logic**: Next.js 서버가 실제 백엔드 API를 호출.
 - **Fallback**: 백엔드 연결 실패 시 자동으로 내장된 Dummy Data를 반환하여 UI 개발/테스트 용이성 확보.
+
+## Directory Structure (Refactored)
+- `/app/components/applications`: Application domain components
+- `/app/components/monitoring`: Monitoring domain components
+- `/app/components/layout`: Layout components (Navbar)
+- `/app/components/ui`: Shared UI components (Modal)
+- `/app/components/providers`: Context providers
 
 ## Environment Variables
 `.env.sample` 파일 참조.

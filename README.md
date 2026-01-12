@@ -1,6 +1,6 @@
-# Nexus Ops Dashboard
+# MeowMeow Dashboard 🐱
 
-**Nexus Ops**는 내부망 환경에서의 애플리케이션 배포 관리(ArgoCD)와 시스템 모니터링(Airflow), 그리고 개발자 유틸리티를 제공하는 통합 대시보드입니다.
+**MeowMeow**는 내부망 환경에서의 애플리케이션 배포 관리(ArgoCD)와 시스템 모니터링(Airflow), 그리고 개발자 유틸리티를 제공하는 **고양이 테마**의 통합 대시보드입니다.
 
 ## 🚀 주요 기능
 
@@ -87,6 +87,6 @@ npm run dev
 ## 🎨 기술 스택
 
 - **Framework**: Next.js 15 (App Router)
-- **Style**: Tailwind CSS
+- **Style**: Tailwind CSS (Meow Theme)
 - **Icons**: Lucide React
 - **Auth**: NextAuth.js (Keycloak)
