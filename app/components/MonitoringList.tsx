@@ -5,22 +5,29 @@ import { MonitoredApplication } from '@/types/monitoring';
 import { PaginatedResponse } from '@/types/application';
 import { MonitoringCard } from './MonitoringCard';
 import { MonitoringRow } from './MonitoringRow';
-import { Search, RefreshCw, ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon } from 'lucide-react';
+import { Search, RefreshCw, ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+
+type SortDirection = 'asc' | 'desc';
+type SortColumn = 'name' | 'metrics.s3Usage' | 'metrics.dbUsage' | 'metrics.dagRunOkCount';
 
 export function MonitoringList() {
   const [apps, setApps] = useState<MonitoredApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  
+  // Sorting
+  const [sortColumn, setSortColumn] = useState<SortColumn>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 60; // Increased to show more items at once for monitoring context
 
-  const fetchMonitoringData = useCallback(async (page: number, searchTerm: string) => {
+  const fetchMonitoringData = useCallback(async (page: number, searchTerm: string, sortCol: string, sortDir: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -28,6 +35,8 @@ export function MonitoringList() {
         page: page.toString(),
         limit: itemsPerPage.toString(),
         search: searchTerm,
+        sortBy: sortCol,
+        sortOrder: sortDir,
       });
       
       const response = await fetch(`/api/monitoring?${params.toString()}`);
@@ -52,16 +61,45 @@ export function MonitoringList() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-        fetchMonitoringData(1, filter);
+        fetchMonitoringData(1, filter, sortColumn, sortDirection);
     }, 500);
     return () => clearTimeout(timer);
-  }, [filter, fetchMonitoringData]);
+  }, [filter, sortColumn, sortDirection, fetchMonitoringData]);
 
   const handlePageChange = (newPage: number) => {
       if (newPage >= 1 && newPage <= totalPages) {
-          fetchMonitoringData(newPage, filter);
+          fetchMonitoringData(newPage, filter, sortColumn, sortDirection);
       }
   };
+
+  const handleSort = (column: SortColumn) => {
+      if (sortColumn === column) {
+          setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+      } else {
+          setSortColumn(column);
+          setSortDirection('asc');
+      }
+  };
+
+  const SortIcon = ({ column }: { column: SortColumn }) => {
+      if (sortColumn !== column) return <ArrowUpDown size={14} className="ml-1 text-gray-400" />;
+      return sortDirection === 'asc' 
+        ? <ArrowUp size={14} className="ml-1 text-blue-600" /> 
+        : <ArrowDown size={14} className="ml-1 text-blue-600" />;
+  };
+
+  const SortableHeader = ({ column, label, className = "" }: { column: SortColumn, label: string, className?: string }) => (
+      <th 
+        scope="col" 
+        className={`px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none ${className}`}
+        onClick={() => handleSort(column)}
+      >
+        <div className="flex items-center">
+            {label}
+            <SortIcon column={column} />
+        </div>
+      </th>
+  );
 
   return (
     <div className="space-y-6">
@@ -94,7 +132,7 @@ export function MonitoringList() {
                 </button>
             </div>
             <button 
-                onClick={() => fetchMonitoringData(currentPage, filter)} 
+                onClick={() => fetchMonitoringData(currentPage, filter, sortColumn, sortDirection)} 
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
@@ -132,10 +170,10 @@ export function MonitoringList() {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50/50">
                             <tr>
-                                <th className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sm:pl-6">Application</th>
-                                <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S3 Usage</th>
-                                <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DB Usage</th>
-                                <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DAG Runs (OK/KO)</th>
+                                <SortableHeader column="name" label="Application" className="pl-4 sm:pl-6" />
+                                <SortableHeader column="metrics.s3Usage" label="S3 Usage" />
+                                <SortableHeader column="metrics.dbUsage" label="DB Usage" />
+                                <SortableHeader column="metrics.dagRunOkCount" label="DAG Runs (OK/KO)" />
                                 <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resources (Req/Quota)</th>
                             </tr>
                         </thead>

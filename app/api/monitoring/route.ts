@@ -31,45 +31,46 @@ const generateMetrics = (): ApplicationMetrics => {
   };
 };
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
-  const projectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
-  
-  const token = await getToken({ req: request });
-  const accessToken = token?.accessToken;
+async function fetchApplicationsData(request: NextRequest): Promise<Application[]> {
+    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
+    const projectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
+    const token = await getToken({ req: request });
+    const accessToken = token?.accessToken;
 
-  let apps: Application[] = [];
+    try {
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
 
-  try {
-    const fetchUrl = new URL(`${backendUrl}/api/v1/argocd/applications`);
-    fetchUrl.searchParams.append('projectName', projectName);
-    
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+        const fetchUrl = new URL(`${backendUrl}/api/v1/argocd/applications`);
+        fetchUrl.searchParams.append('projectName', projectName);
 
-    const res = await fetch(fetchUrl.toString(), { headers, cache: 'no-store' });
-    
-    if (res.status === 401) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+        const res = await fetch(fetchUrl.toString(), { headers, cache: 'no-store' });
+        if (!res.ok) throw new Error('Backend unavailable');
 
-    if (res.ok) {
         const text = await res.text();
         const rawData = text ? JSON.parse(text) : [];
-        apps = Array.isArray(rawData) ? rawData : (rawData.items || rawData.data || []);
-    } else {
-        throw new Error('Backend unavailable');
+        return Array.isArray(rawData) ? rawData : (rawData.items || rawData.data || []);
+    } catch (error) {
+        console.warn("Monitoring: Backend unavailable, using dummy apps");
+        try {
+            const dummyUrl = new URL('/api/application-dummy', request.nextUrl.origin);
+            dummyUrl.searchParams.set('limit', '1000');
+            const dummyRes = await fetch(dummyUrl.toString(), { cache: 'no-store' });
+            const dummyData = await dummyRes.json();
+            return dummyData.data || [];
+        } catch (dummyError) {
+             return [];
+        }
     }
-  } catch (error) {
-    console.warn("Monitoring: Backend unavailable, using dummy apps");
-    const dummyUrl = new URL('/api/application-dummy', request.nextUrl.origin);
-    const dummyRes = await fetch(dummyUrl.toString(), { cache: 'no-store' });
-    const dummyData = await dummyRes.json();
-    apps = dummyData.data || [];
-  }
+}
 
-  // Client-side Filter
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+
+  // 1. Fetch
+  let apps = await fetchApplicationsData(request);
+
+  // 2. Filter
   const search = searchParams.get('search') || '';
   if (search) {
      const lowerSearch = search.toLowerCase();
@@ -79,13 +80,46 @@ export async function GET(request: NextRequest) {
      );
   }
 
-  // Attach Metrics
+  // 3. Attach Metrics (Monitoring Specific)
   const monitoredApps: MonitoredApplication[] = apps.map(app => ({
     ...app,
     metrics: generateMetrics()
   }));
 
-  // Pagination
+  // 4. Sort
+  const sortBy = searchParams.get('sortBy') || 'name';
+  const sortOrder = searchParams.get('sortOrder') || 'asc';
+
+  monitoredApps.sort((a, b) => {
+      // Safe access guards
+      if (!a || !b) return 0;
+
+      let valA: any;
+      let valB: any;
+
+      if (sortBy.startsWith('metrics.')) {
+          const metricKey = sortBy.split('.')[1] as keyof ApplicationMetrics;
+          valA = a.metrics ? a.metrics[metricKey] : 0;
+          valB = b.metrics ? b.metrics[metricKey] : 0;
+      } else {
+          valA = a[sortBy as keyof typeof a];
+          valB = b[sortBy as keyof typeof b];
+      }
+
+      if (valA === undefined || valA === null) valA = '';
+      if (valB === undefined || valB === null) valB = '';
+
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        valA = valA.toLowerCase();
+        valB = valB.toLowerCase();
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+  });
+
+  // 5. Paginate
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '12');
   const startIndex = (page - 1) * limit;
