@@ -1,6 +1,6 @@
 'use client';
 
-import { Hexagon, LayoutDashboard, Activity, ExternalLink as ExternalLinkIcon } from 'lucide-react';
+import { Hexagon, LayoutDashboard, Activity, FileCode, ExternalLink as ExternalLinkIcon } from 'lucide-react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,6 +49,17 @@ export function Navbar() {
                 >
                   <Activity size={18} />
                   Monitoring
+                </Link>
+                <Link 
+                  href="/jwt" 
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive('/jwt') 
+                      ? 'bg-blue-50 text-blue-700' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <FileCode size={18} />
+                  JWT Parser
                 </Link>
                 <a 
                   href={argoCdUrl}
