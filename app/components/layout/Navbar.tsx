@@ -133,11 +133,17 @@ export function Navbar() {
                          <p className="font-medium text-gray-900">{session.user?.name}</p>
                          <p className="text-xs text-gray-500">{session.user?.email}</p>
                      </div>
-                     <img 
-                        src={session.user?.image || `https://ui-avatars.com/api/?name=${session.user?.name}`} 
-                        alt="Profile" 
-                        className="w-8 h-8 rounded-full border border-gray-200"
-                     />
+                     {session.user?.image ? (
+                       <img 
+                          src={session.user.image} 
+                          alt="Profile" 
+                          className="w-8 h-8 rounded-full border border-gray-200"
+                       />
+                     ) : (
+                       <div className="w-8 h-8 rounded-full bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700 font-bold text-xs">
+                          {session.user?.name?.charAt(0) || 'U'}
+                       </div>
+                     )}
                      <button 
                         onClick={() => signOut()}
                         className="text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
