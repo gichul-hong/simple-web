@@ -3,6 +3,7 @@ import { Application } from '@/types/application';
 import { ExternalLink, GitBranch, Box, Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle, Wind, Activity, FolderOpen, Github } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import Link from 'next/link';
+import { useConfig } from '../providers/ConfigContext';
 
 interface ApplicationRowProps {
   app: Application;
@@ -20,9 +21,7 @@ const statusConfig = {
 export function ApplicationRow({ app }: ApplicationRowProps) {
   const statusInfo = statusConfig[app.status] || statusConfig.Unknown;
   const StatusIcon = statusInfo.icon;
-
-  const githubBaseUrl = process.env.NEXT_PUBLIC_GITHUB_BASE_URL || 'https://github.com';
-  const grafanaBaseUrl = process.env.NEXT_PUBLIC_GRAFANA_BASE_URL || 'https://grafana.example.com';
+  const { githubBaseUrl, grafanaBaseUrl } = useConfig();
 
   const githubUrl = `${githubBaseUrl}/${app.namespace}/airflow-dags`;
   const grafanaUrl = `${grafanaBaseUrl}?project_name=${app.namespace}`;

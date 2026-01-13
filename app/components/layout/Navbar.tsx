@@ -5,18 +5,18 @@ import { Cat, LayoutDashboard, Activity, FileCode, ExternalLink as ExternalLinkI
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useConfig } from '../providers/ConfigContext';
 
 export function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+  const { authEnabled, argoCdBaseUrl } = useConfig();
   const [isUtilsOpen, setIsUtilsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => pathname === path;
   const isUtilsActive = pathname.startsWith('/utils');
-  const argoCdUrl = process.env.NEXT_PUBLIC_ARGOCD_BASE_URL || 'https://argocd.example.com';
-
+  
   const showNav = !authEnabled || session;
 
   useEffect(() => {
@@ -114,7 +114,7 @@ export function Navbar() {
             {showNav && (
               <div className="hidden md:flex items-center">
                 <a 
-                  href={argoCdUrl}
+                  href={argoCdBaseUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"

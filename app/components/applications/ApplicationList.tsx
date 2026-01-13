@@ -6,6 +6,7 @@ import { ApplicationCard } from './ApplicationCard';
 import { ApplicationRow } from './ApplicationRow';
 import { LayoutGrid, List as ListIcon, Search, RefreshCw, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import { useConfig } from '../providers/ConfigContext';
 
 type SortDirection = 'asc' | 'desc';
 type SortColumn = 'name' | 'status' | 'project' | 'chartName' | 'creationTimestamp';
@@ -16,6 +17,7 @@ export function ApplicationList() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const { authEnabled } = useConfig();
   
   // Sorting State
   const [sortColumn, setSortColumn] = useState<SortColumn>('name');
@@ -41,7 +43,6 @@ export function ApplicationList() {
       
       const response = await fetch(`/api/applications?${params.toString()}`);
       
-      const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
       if (authEnabled && response.status === 401) {
         signIn();
         return;

@@ -18,7 +18,8 @@ MeowMeow(구 Nexus Ops, ArgoDash)는 ArgoCD 기반의 애플리케이션 배포 
 ## Key Features & Architectures
 
 ### 1. Authentication (RBAC & Toggle)
-- **Env Toggle**: `NEXT_PUBLIC_AUTH_ENABLED` 변수로 인증 활성화 여부 제어 가능. `false`일 경우 'Dev Mode'로 동작하여 로그인 없이 접근 가능.
+- **Env Toggle**: `AUTH_ENABLED` (Legacy: `NEXT_PUBLIC_AUTH_ENABLED`) 변수로 인증 활성화 여부 제어 가능. `false`일 경우 'Dev Mode'로 동작하여 로그인 없이 접근 가능.
+- **Runtime Config**: `NEXT_PUBLIC_*` 환경변수 의존성을 제거하고, 서버 사이드 환경변수(`AUTH_ENABLED`, `ARGOCD_BASE_URL` 등)를 Root Layout에서 읽어 `ConfigProvider`를 통해 클라이언트로 주입하는 방식으로 변경. 이를 통해 빌드 후에도 환경변수 변경으로 설정 수정 가능.
 - **RBAC**: 인증 활성화 시, Keycloak 로그인 사용자의 `groups` 클레임에 `AIP_AIRFLOW_ADMIN` 그룹이 있어야 로그인 성공. (없을 시 Access Denied)
 - **Session**: Access Token은 서버 사이드(API Route)에서만 복호화되어 백엔드 요청 헤더에 사용됨.
 

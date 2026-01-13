@@ -5,11 +5,12 @@ import { NewApplicationModal } from "./components/applications/NewApplicationMod
 import { Plus, Lock } from "lucide-react";
 import { useState } from "react";
 import { useSession, signIn } from "next-auth/react";
+import { useConfig } from "./components/providers/ConfigContext";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+  const { authEnabled } = useConfig();
 
   if (authEnabled && status === "loading") {
     return (

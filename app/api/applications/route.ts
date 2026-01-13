@@ -7,7 +7,7 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
     const projectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
     const token = await getToken({ req: request });
     const accessToken = token?.accessToken;
-    const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+    const authEnabled = (process.env.AUTH_ENABLED || process.env.NEXT_PUBLIC_AUTH_ENABLED) === 'true';
 
     // 1. Try fetching from Real Backend
     try {
