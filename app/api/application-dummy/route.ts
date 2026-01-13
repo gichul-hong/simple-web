@@ -37,6 +37,8 @@ const generateDummyData = (count: number): Application[] => {
 // Generate 50 dummy applications
 const allApplications = generateDummyData(50);
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const page = parseInt(searchParams.get('page') || '1');

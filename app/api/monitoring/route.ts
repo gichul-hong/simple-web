@@ -3,6 +3,8 @@ import { getToken } from 'next-auth/jwt';
 import { MonitoredApplication, ApplicationMetrics } from '@/types/monitoring';
 import { Application, PaginatedResponse } from '@/types/application';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to generate random metrics based on new requirements
 const generateMetrics = (): ApplicationMetrics => {
   const s3Quota = 500;
