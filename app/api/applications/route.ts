@@ -12,6 +12,8 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
     const token = await getToken({ req: request });
     const accessToken = token?.accessToken;
 
+    console.log(`[API Debug] AccessToken exists: ${!!accessToken}, AuthEnabled: ${authEnabled}`);
+
     // 1. Try fetching from Real Backend
     try {
         const headers: HeadersInit = { 'Content-Type': 'application/json' };
