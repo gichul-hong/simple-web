@@ -31,6 +31,14 @@ export default function RootLayout({
   // Use centralized config loader (Runtime only)
   const serverConfig = getServerConfig();
 
+  // Server-side logging for debugging in K8s/Docker
+  console.log('--- Server Configuration Loaded ---');
+  console.log(`AUTH_ENABLED: ${serverConfig.authEnabled}`);
+  console.log(`BACKEND_API_URL: ${serverConfig.backendApiUrl}`);
+  console.log(`ARGOCD_PROJECT_NAME: ${serverConfig.argoCdProjectName}`);
+  console.log(`ARGOCD_BASE_URL: ${serverConfig.externalUrls.argoCdBase}`);
+  console.log('----------------------------------');
+
   const config: AppConfig = {
     authEnabled: serverConfig.authEnabled,
     argoCdBaseUrl: serverConfig.externalUrls.argoCdBase,
