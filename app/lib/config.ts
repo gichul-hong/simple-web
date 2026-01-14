@@ -31,8 +31,10 @@ const getEnv = (key: string, defaultValue?: string): string => {
 };
 
 export const getServerConfig = (): AppConfiguration => {
+  const isAuthEnabled = getEnv('AUTH_ENABLED', 'false').toLowerCase().trim() === 'true';
+
   return {
-    authEnabled: getEnv('AUTH_ENABLED', 'false') === 'true',
+    authEnabled: isAuthEnabled,
     
     // Internal Service URLs (Cluster Internal)
     // Default to localhost for local dev, but expected to be overridden in K8s
