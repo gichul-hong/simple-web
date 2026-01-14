@@ -1,5 +1,5 @@
 # 1. Base Image: Node.js 20 on Alpine Linux (Lightweight)
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 # 2. Set Working Directory
 WORKDIR /app
@@ -17,12 +17,6 @@ COPY . .
 # 5. Build the Application
 # This generates the .next directory with all static assets and server code
 RUN npm run build
-
-# --- Production Stage (Optional but recommended for smaller image) ---
-# For simplicity in troubleshooting, we can keep it single stage or use multi-stage.
-# Let's stick to a clean single stage for now to ensure everything is there, 
-# or a simple runner stage if size matters. 
-# Given "images not showing" issues, a single stage is safest to ensure no file is missed.
 
 # 6. Expose Port
 EXPOSE 3000
