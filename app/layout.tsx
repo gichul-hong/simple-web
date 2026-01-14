@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./components/providers/Providers";
 import { Navbar } from "./components/layout/Navbar";
 import { AppConfig } from "./components/providers/ConfigContext";
+import { getServerConfig } from "@/app/lib/config";
 
 const geistSans = localFont({
   src: "./fonts/Geist-Variable.woff2",
@@ -27,13 +28,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Use centralized config loader (Runtime only)
+  const serverConfig = getServerConfig();
+
   const config: AppConfig = {
-    // Fallback to NEXT_PUBLIC_ for backward compatibility if new vars aren't set,
-    // but prefer the non-prefixed versions for runtime configuration.
-    authEnabled: (process.env.AUTH_ENABLED || process.env.NEXT_PUBLIC_AUTH_ENABLED) === 'true',
-    argoCdBaseUrl: process.env.ARGOCD_BASE_URL || process.env.NEXT_PUBLIC_ARGOCD_BASE_URL || 'https://argocd.example.com',
-    githubBaseUrl: process.env.GITHUB_BASE_URL || process.env.NEXT_PUBLIC_GITHUB_BASE_URL || 'https://github.com',
-    grafanaBaseUrl: process.env.GRAFANA_BASE_URL || process.env.NEXT_PUBLIC_GRAFANA_BASE_URL || 'https://grafana.example.com',
+    authEnabled: serverConfig.authEnabled,
+    argoCdBaseUrl: serverConfig.externalUrls.argoCdBase,
+    githubBaseUrl: serverConfig.externalUrls.githubBase,
+    grafanaBaseUrl: serverConfig.externalUrls.grafanaBase,
   };
 
   return (

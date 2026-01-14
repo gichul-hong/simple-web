@@ -1,18 +1,26 @@
 import { NextAuthOptions } from 'next-auth';
 import KeycloakProvider from 'next-auth/providers/keycloak';
+import { getServerConfig } from '@/app/lib/config';
+
+// Note: We cannot call getServerConfig() directly at the top level if it relies on runtime env vars that might change
+// However, next-auth options are usually exported as a static object.
+// To support runtime config reloading (if needed), we might need to export a function or ensure
+// process.env is read at module load time (which happens at server start).
+// Here we assume standard server startup env loading.
+
+const config = getServerConfig();
 
 export const authOptions: NextAuthOptions = {
   providers: [
     KeycloakProvider({
-      clientId: process.env.KEYCLOAK_ID || '',
-      clientSecret: process.env.KEYCLOAK_SECRET || '',
-      issuer: process.env.KEYCLOAK_ISSUER || '',
+      clientId: config.keycloak.clientId || '',
+      clientSecret: config.keycloak.clientSecret || '',
+      issuer: config.keycloak.issuer || '',
     }),
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      const authEnabled = (process.env.AUTH_ENABLED || process.env.NEXT_PUBLIC_AUTH_ENABLED) === 'true';
-      if (!authEnabled) return true;
+      if (!config.authEnabled) return true;
 
       if (!profile) return false;
 

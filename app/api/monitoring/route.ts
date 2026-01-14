@@ -1,51 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { MonitoredApplication, ApplicationMetrics } from '@/types/monitoring';
-import { Application, PaginatedResponse } from '@/types/application';
+import { MonitoringData } from '@/types/monitoring';
+import { getServerConfig } from '@/app/lib/config';
 
 export const dynamic = 'force-dynamic';
 
-// Helper to generate random metrics based on new requirements
-const generateMetrics = (): ApplicationMetrics => {
-  const s3Quota = 500;
-  const cpuQuota = 8; 
-  const memQuota = 16;
+async function fetchMonitoringData(request: NextRequest): Promise<MonitoringData[]> {
+    const config = getServerConfig();
+    const { backendApiUrl, argoCdProjectName, authEnabled } = config;
 
-  const cpuLimit = parseFloat((Math.random() * (cpuQuota - 2) + 2).toFixed(2));
-  const memLimit = parseFloat((Math.random() * (memQuota - 4) + 4).toFixed(2));
-
-  return {
-    s3Usage: parseFloat((Math.random() * s3Quota).toFixed(2)),
-    s3Quota: s3Quota,
-    
-    dbUsage: Math.floor(Math.random() * 2048),
-    
-    dagRunOkCount: Math.floor(Math.random() * 100),
-    dagRunKoCount: Math.floor(Math.random() * 10),
-    
-    cpuRequest: parseFloat((Math.random() * (cpuLimit - 0.5) + 0.1).toFixed(2)),
-    cpuLimit: cpuLimit,
-    cpuQuota: cpuQuota,
-    
-    memRequest: parseFloat((Math.random() * (memLimit - 1) + 0.5).toFixed(2)),
-    memLimit: memLimit,
-    memQuota: memQuota,
-  };
-};
-
-async function fetchApplicationsData(request: NextRequest): Promise<Application[]> {
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
-    const projectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
     const token = await getToken({ req: request });
     const accessToken = token?.accessToken;
-    const authEnabled = (process.env.AUTH_ENABLED || process.env.NEXT_PUBLIC_AUTH_ENABLED) === 'true';
 
+    // 1. Try fetching from Real Backend
     try {
         const headers: HeadersInit = { 'Content-Type': 'application/json' };
-        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-
-        const fetchUrl = new URL(`${backendUrl}/api/v1/argocd/applications`);
-        fetchUrl.searchParams.append('projectName', projectName);
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+        
+        // Example: /api/v1/monitoring/metrics
+        const fetchUrl = new URL(`${backendApiUrl}/api/v1/monitoring/metrics`);
+        fetchUrl.searchParams.append('projectName', argoCdProjectName);
 
         const res = await fetch(fetchUrl.toString(), { headers, cache: 'no-store' });
         

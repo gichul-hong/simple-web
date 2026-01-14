@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { getServerConfig } from '@/app/lib/config';
 
 export async function POST(request: NextRequest) {
-  const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
-  
-  // Securely retrieve the token from the HTTP-only cookie
-  const token = await getToken({ req: request });
-  const accessToken = token?.accessToken;
-
-  try {
-    const body = await request.json();
+    const config = getServerConfig();
+    const backendUrl = config.backendApiUrl;
+    
+    try {
+        const body = await request.json();
     
     const headers: HeadersInit = {
         'Content-Type': 'application/json',

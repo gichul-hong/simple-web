@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { Application, PaginatedResponse } from '@/types/application';
+import { getServerConfig } from '@/app/lib/config';
 
 export const dynamic = 'force-dynamic';
 
 async function fetchApplicationsData(request: NextRequest): Promise<Application[]> {
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
-    const projectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
+    const config = getServerConfig();
+    const { backendApiUrl, argoCdProjectName, authEnabled } = config;
+
     const token = await getToken({ req: request });
     const accessToken = token?.accessToken;
-    const authEnabled = (process.env.AUTH_ENABLED || process.env.NEXT_PUBLIC_AUTH_ENABLED) === 'true';
 
     // 1. Try fetching from Real Backend
     try {
@@ -18,8 +19,8 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
             headers['Authorization'] = `Bearer ${accessToken}`;
         }
 
-        const fetchUrl = new URL(`${backendUrl}/api/v1/argocd/applications`);
-        fetchUrl.searchParams.append('projectName', projectName);
+        const fetchUrl = new URL(`${backendApiUrl}/api/v1/argocd/applications`);
+        fetchUrl.searchParams.append('projectName', argoCdProjectName);
         
         console.log(`[API] Fetching applications from: ${fetchUrl.toString()}`);
 
