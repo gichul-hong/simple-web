@@ -6,6 +6,10 @@ import { Navbar } from "./components/layout/Navbar";
 import { AppConfig } from "./components/providers/ConfigContext";
 import { getServerConfig } from "@/app/lib/config";
 
+// Force dynamic rendering to ensure environment variables are read at runtime
+// and logs are printed on every request (useful for debugging in K8s)
+export const dynamic = 'force-dynamic';
+
 const geistSans = localFont({
   src: "./fonts/Geist-Variable.woff2",
   variable: "--font-geist-sans",
