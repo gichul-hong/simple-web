@@ -15,6 +15,8 @@ RUN npm ci
 COPY . .
 
 # 5. Build the Application
+# Clean previous builds to ensure fresh CSS generation
+RUN rm -rf .next
 # This generates the .next directory with all static assets and server code
 RUN npm run build
 
