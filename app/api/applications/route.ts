@@ -20,6 +20,8 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
 
         const fetchUrl = new URL(`${backendUrl}/api/v1/argocd/applications`);
         fetchUrl.searchParams.append('projectName', projectName);
+        
+        console.log(`[API] Fetching applications from: ${fetchUrl.toString()}`);
 
         const res = await fetch(fetchUrl.toString(), { headers, cache: 'no-store' });
 
