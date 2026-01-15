@@ -38,39 +38,34 @@ export default function RootLayout({
     grafanaBaseUrl: serverConfig.externalUrls.grafanaBase,
   };
 
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
-      >
-        <Providers config={config}>
-          <Navbar />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
-        </Providers>
-      </body>
-    </html>
-  );
-}
-    authEnabled: serverConfig.authEnabled,
-    argoCdBaseUrl: serverConfig.externalUrls.argoCdBase,
-    githubBaseUrl: serverConfig.externalUrls.githubBase,
-    grafanaBaseUrl: serverConfig.externalUrls.grafanaBase,
-  };
+    return (
 
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
-      >
-        <Providers config={config}>
-          <Navbar />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
-        </Providers>
-      </body>
-    </html>
-  );
-}
+      <html lang="en">
+
+        <body
+
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
+
+        >
+
+          <Providers config={config}>
+
+            <Navbar />
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+              {children}
+
+            </main>
+
+          </Providers>
+
+        </body>
+
+      </html>
+
+    );
+
+  }
+
+  

@@ -214,7 +214,7 @@ export function ApplicationList() {
             )}
             
             {/* Pagination Controls */}
-            {totalPages > 0 && (
+            {totalItems > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 pt-6 gap-4">
                     <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                          <div className="flex items-center gap-2">
@@ -222,7 +222,7 @@ export function ApplicationList() {
                             <select
                                 value={itemsPerPage}
                                 onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                className="block w-20 rounded-md border-gray-300 py-1.5 text-base leading-5 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                                className="block w-20 rounded-md border-gray-300 py-1.5 text-base leading-5 bg-white text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
                             >
                                 <option value={10}>10</option>
                                 <option value={50}>50</option>

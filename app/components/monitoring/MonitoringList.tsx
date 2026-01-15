@@ -27,15 +27,16 @@ export function MonitoringList() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 60; // Increased to show more items at once for monitoring context
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(60);
 
-  const fetchMonitoringData = useCallback(async (page: number, searchTerm: string, sortCol: string, sortDir: string) => {
+  const fetchMonitoringData = useCallback(async (page: number, searchTerm: string, limit: number, sortCol: string, sortDir: string) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: itemsPerPage.toString(),
+        limit: limit.toString(),
         search: searchTerm,
         sortBy: sortCol,
         sortOrder: sortDir,
@@ -53,6 +54,7 @@ export function MonitoringList() {
       const data: PaginatedResponse<MonitoredApplication> = await response.json();
       setApps(data.data);
       setTotalPages(data.meta.totalPages);
+      setTotalItems(data.meta.total);
       setCurrentPage(data.meta.page);
     } catch (err) {
         setError('Failed to load monitoring data');
@@ -63,14 +65,14 @@ export function MonitoringList() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-        fetchMonitoringData(1, filter, sortColumn, sortDirection);
+        fetchMonitoringData(1, filter, itemsPerPage, sortColumn, sortDirection);
     }, 500);
     return () => clearTimeout(timer);
-  }, [filter, sortColumn, sortDirection, fetchMonitoringData]);
+  }, [filter, itemsPerPage, sortColumn, sortDirection, fetchMonitoringData]);
 
   const handlePageChange = (newPage: number) => {
       if (newPage >= 1 && newPage <= totalPages) {
-          fetchMonitoringData(newPage, filter, sortColumn, sortDirection);
+          fetchMonitoringData(newPage, filter, itemsPerPage, sortColumn, sortDirection);
       }
   };
 
@@ -191,25 +193,68 @@ export function MonitoringList() {
         </>
       )}
       
-      {/* Simple Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-8">
-            <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
-            >
-                <ChevronLeft size={20} />
-            </button>
-            <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
-             <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
-            >
-                <ChevronRight size={20} />
-            </button>
-        </div>
+      {/* Pagination Controls */}
+      {totalItems > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 pt-6 gap-4">
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                   <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-700 whitespace-nowrap">Rows per page:</span>
+                      <select
+                          value={itemsPerPage}
+                          onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                          className="block w-20 rounded-md border-gray-300 py-1.5 text-base leading-5 bg-white text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                      >
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                          <option value={60}>60</option>
+                          <option value={100}>100</option>
+                      </select>
+                  </div>
+                  <p className="text-sm text-gray-700 whitespace-nowrap">
+                      Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
+                      <span className="font-medium">{totalItems}</span> results
+                  </p>
+              </div>
+              <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                      <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                          <span className="sr-only">Previous</span>
+                          <ChevronLeft size={16} />
+                      </button>
+                      {totalPages <= 7 ? (
+                          [...Array(totalPages)].map((_, i) => (
+                              <button
+                                  key={i + 1}
+                                  onClick={() => handlePageChange(i + 1)}
+                                  className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                      currentPage === i + 1
+                                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                  }`}
+                              >
+                                  {i + 1}
+                              </button>
+                          ))
+                      ) : (
+                          <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                              Page {currentPage} of {totalPages}
+                          </span>
+                      )}
+                      <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                          <span className="sr-only">Next</span>
+                          <ChevronRight size={16} />
+                      </button>
+                  </nav>
+              </div>
+          </div>
       )}
     </div>
   );
