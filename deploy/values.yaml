@@ -1,0 +1,52 @@
+# Default values for simple-web.
+
+replicaCount: 1
+
+image:
+  repository: my-registry/simple-web
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# ConfigMap Configuration
+# This content will be mounted as a file at /app/.env (or specified path)
+appConfig:
+  mountPath: "/app/.env"
+  subPath: ".env"
+  content: |
+    # Server-side Environment Variables
+    BACKEND_API_URL=http://backend-service:8080
+    ARGOCD_PROJECT_NAME=airflow-pools
+    
+    # Client-side Environment Variables (Requires Re-build or Runtime Config support)
+    # Note: NEXT_PUBLIC_ vars are usually baked in at build time.
+    # To support runtime changes, we are using process.env access in components.
+    NEXT_PUBLIC_AUTH_ENABLED=true
+    NEXT_PUBLIC_ARGOCD_BASE_URL=https://argocd.example.com
+    NEXT_PUBLIC_GITHUB_BASE_URL=https://github.com
+    NEXT_PUBLIC_GRAFANA_BASE_URL=https://grafana.example.com
+    
+    # SSL/TLS Configuration
+    NODE_TLS_REJECT_UNAUTHORIZED=0
+    # NODE_EXTRA_CA_CERTS=/app/public/root-ca.crt (If mounted)
+
+# Optional: Mount root-ca.crt if needed
+# caCert:
+#   enabled: false
+#   content: |
+#     -----BEGIN CERTIFICATE-----
+#     ...
+#     -----END CERTIFICATE-----
