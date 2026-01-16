@@ -13,6 +13,22 @@ service:
   port: 80
   targetPort: 3000
 
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
 resources:
   limits:
     cpu: 500m
@@ -22,7 +38,7 @@ resources:
     memory: 128Mi
 
 # ConfigMap Configuration
-# This content will be mounted as a file at /app/.env (or specified path)
+# This content will be mounted as a file at /app/.env
 appConfig:
   mountPath: "/app/.env"
   subPath: ".env"
@@ -31,9 +47,7 @@ appConfig:
     BACKEND_API_URL=http://backend-service:8080
     ARGOCD_PROJECT_NAME=airflow-pools
     
-    # Client-side Environment Variables (Requires Re-build or Runtime Config support)
-    # Note: NEXT_PUBLIC_ vars are usually baked in at build time.
-    # To support runtime changes, we are using process.env access in components.
+    # Client-side Environment Variables
     NEXT_PUBLIC_AUTH_ENABLED=true
     NEXT_PUBLIC_ARGOCD_BASE_URL=https://argocd.example.com
     NEXT_PUBLIC_GITHUB_BASE_URL=https://github.com
@@ -41,7 +55,6 @@ appConfig:
     
     # SSL/TLS Configuration
     NODE_TLS_REJECT_UNAUTHORIZED=0
-    # NODE_EXTRA_CA_CERTS=/app/public/root-ca.crt (If mounted)
 
 # Optional: Mount root-ca.crt if needed
 # caCert:
