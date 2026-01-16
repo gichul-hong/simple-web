@@ -1,6 +1,8 @@
 'use client';
 
-import React, { createContext, useContext } from 'react';
+// This hook now reads directly from NEXT_PUBLIC_ environment variables
+// ConfigContext provider is no longer needed but kept for API compatibility if necessary.
+// We should eventually refactor components to access env directly or keep this as a facade.
 
 export interface AppConfig {
   authEnabled: boolean;
@@ -9,26 +11,22 @@ export interface AppConfig {
   grafanaBaseUrl: string;
 }
 
-const ConfigContext = createContext<AppConfig | null>(null);
-
-export function ConfigProvider({
-  config,
-  children,
-}: {
-  config: AppConfig;
-  children: React.ReactNode;
-}) {
-  return (
-    <ConfigContext.Provider value={config}>
-      {children}
-    </ConfigContext.Provider>
-  );
+export function useConfig(): AppConfig {
+  return {
+    authEnabled: process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true',
+    argoCdBaseUrl: process.env.NEXT_PUBLIC_ARGOCD_BASE_URL || '',
+    githubBaseUrl: process.env.NEXT_PUBLIC_GITHUB_BASE_URL || '',
+    grafanaBaseUrl: process.env.NEXT_PUBLIC_GRAFANA_BASE_URL || '',
+  };
 }
 
-export function useConfig() {
-  const context = useContext(ConfigContext);
-  if (!context) {
-    throw new Error('useConfig must be used within a ConfigProvider');
-  }
-  return context;
+// Deprecated Provider - renders children directly
+export function ConfigProvider({ 
+  children, 
+  config 
+}: { 
+  children: React.ReactNode; 
+  config?: AppConfig 
+}) {
+  return <>{children}</>;
 }
