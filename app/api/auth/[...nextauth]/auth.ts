@@ -1,10 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import KeycloakProvider from 'next-auth/providers/keycloak';
 import { getServerConfig } from '@/app/lib/config';
-import { initCustomCA } from '@/app/lib/init-ca';
-
-// Initialize Custom CA (for private/corporate networks)
-initCustomCA();
 
 // Note: We cannot call getServerConfig() directly at the top level if it relies on runtime env vars that might change
 // However, next-auth options are usually exported as a static object.
