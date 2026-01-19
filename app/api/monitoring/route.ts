@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { MonitoredApplication, ApplicationMetrics } from '@/types/monitoring';
 import { Application, PaginatedResponse } from '@/types/application';
+import { allApplications } from '@/app/api/application-dummy/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,20 +55,7 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
   } catch (error) {
     // 2. Fallback to Dummy Data
     console.warn("Monitoring: Backend unavailable or not configured, using dummy apps. Reason:", error);
-    try {
-      // Fetch from the local dummy API
-      const dummyUrl = new URL('/api/application-dummy', request.nextUrl.origin);
-      dummyUrl.searchParams.set('limit', '100'); // Get enough items
-      
-      const dummyRes = await fetch(dummyUrl.toString(), { cache: 'no-store' });
-      if (!dummyRes.ok) throw new Error('Dummy API failed');
-      
-      const dummyData = await dummyRes.json();
-      return dummyData.data || [];
-    } catch (dummyError) {
-      console.error("Monitoring: Dummy API also failed", dummyError);
-      return [];
-    }
+    return allApplications;
   }
 }
 

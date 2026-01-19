@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { Application, PaginatedResponse } from '@/types/application';
+import { allApplications } from '@/app/api/application-dummy/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,23 +37,7 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
 
     } catch (error) {
         console.warn("Real backend failed, falling back to dummy data.", error);
-        
-        // 2. Fallback to Dummy API
-        try {
-            const dummyUrl = new URL('/api/application-dummy', request.nextUrl.origin);
-            // We only need raw data from dummy, not paginated, so we might need to ask for all
-            // But our dummy API simulates pagination. We should ask for a large limit to get "all" for client-side processing
-            dummyUrl.searchParams.set('limit', '1000'); 
-            
-            const dummyRes = await fetch(dummyUrl.toString(), { cache: 'no-store' });
-            if (!dummyRes.ok) throw new Error('Dummy API failed');
-            
-            const dummyJson = await dummyRes.json();
-            return dummyJson.data || [];
-        } catch (dummyError) {
-            console.error("All data sources failed", dummyError);
-            return [];
-        }
+        return allApplications;
     }
 }
 

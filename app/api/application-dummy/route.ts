@@ -35,7 +35,7 @@ const generateDummyData = (count: number): Application[] => {
 };
 
 // Generate 50 dummy applications
-const allApplications = generateDummyData(50);
+export const allApplications = generateDummyData(50);
 
 export const dynamic = 'force-dynamic';
 
