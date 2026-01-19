@@ -54,8 +54,15 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
     return Array.isArray(data) ? data : (data.items || data.data || []);
   } catch (error) {
     // 2. Fallback to Dummy Data
-    console.warn("Monitoring: Backend unavailable or not configured, using dummy apps. Reason:", error);
-    return allApplications;
+    console.warn("Monitoring: Backend unavailable or not configured.", error);
+    
+    // Only use dummy data if Auth is DISABLED (Dev Mode)
+    if (!authEnabled) {
+        console.warn("Falling back to dummy data (Dev Mode).");
+        return allApplications;
+    }
+
+    return [];
   }
 }
 

@@ -36,8 +36,15 @@ async function fetchApplicationsData(request: NextRequest): Promise<Application[
         return Array.isArray(rawData) ? rawData : (rawData.items || rawData.data || []);
 
     } catch (error) {
-        console.warn("Real backend failed, falling back to dummy data.", error);
-        return allApplications;
+        console.warn("Real backend failed.", error);
+
+        // Only use dummy data if Auth is DISABLED (Dev Mode)
+        if (!authEnabled) {
+            console.warn("Falling back to dummy data (Dev Mode).");
+            return allApplications;
+        }
+
+        return [];
     }
 }
 
