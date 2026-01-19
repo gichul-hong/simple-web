@@ -136,7 +136,7 @@ export function MonitoringList() {
                 </button>
             </div>
             <button 
-                onClick={() => fetchMonitoringData(currentPage, filter, sortColumn, sortDirection)} 
+                onClick={() => fetchMonitoringData(currentPage, filter, itemsPerPage, sortColumn, sortDirection)} 
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
