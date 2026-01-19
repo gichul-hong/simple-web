@@ -11,7 +11,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+      const authEnabled = process.env.AUTH_ENABLED === 'true';
       if (!authEnabled) return true;
 
       if (!profile) return false;

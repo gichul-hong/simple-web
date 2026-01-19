@@ -24,7 +24,7 @@ function generateMetrics(): ApplicationMetrics {
 async function fetchApplicationsData(request: NextRequest): Promise<Application[]> {
   const backendApiUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
   const argoCdProjectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
-  const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === 'true';
+  const authEnabled = process.env.AUTH_ENABLED === 'true';
 
   const token = await getToken({ req: request });
   const accessToken = token?.accessToken;

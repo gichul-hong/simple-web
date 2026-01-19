@@ -1,10 +1,9 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import { ConfigProvider, AppConfig } from './ConfigContext';
+import { ConfigProvider } from './ConfigContext';
 
-// Config is now optional/ignored as we use env vars directly
-export function Providers({ children, config }: { children: React.ReactNode; config?: AppConfig }) {
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ConfigProvider>
       <SessionProvider refetchInterval={5 * 60}>

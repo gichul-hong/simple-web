@@ -48,10 +48,10 @@ appConfig:
     ARGOCD_PROJECT_NAME=airflow-pools
     
     # Client-side Environment Variables
-    NEXT_PUBLIC_AUTH_ENABLED=true
-    NEXT_PUBLIC_ARGOCD_BASE_URL=https://argocd.example.com
-    NEXT_PUBLIC_GITHUB_BASE_URL=https://github.com
-    NEXT_PUBLIC_GRAFANA_BASE_URL=https://grafana.example.com
+    AUTH_ENABLED=true
+    ARGOCD_BASE_URL=https://argocd.example.com
+    GITHUB_BASE_URL=https://github.com
+    GRAFANA_BASE_URL=https://grafana.example.com
     
     # SSL/TLS Configuration
     NODE_TLS_REJECT_UNAUTHORIZED=0
