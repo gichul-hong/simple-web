@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Cat, LayoutDashboard, Activity, FileCode, ExternalLink as ExternalLinkIcon, Wrench, ChevronDown, FileJson, Binary } from 'lucide-react';
+import { Cat, LayoutDashboard, Activity, FileCode, ExternalLink as ExternalLinkIcon, Wrench, ChevronDown, FileJson, Binary, Link as LinkIcon } from 'lucide-react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -116,6 +116,16 @@ export function Navbar() {
                         >
                             <Binary size={16} />
                             Base64
+                        </Link>
+                        <Link 
+                            href="/utils/url-encoding" 
+                            onClick={() => setIsUtilsOpen(false)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                isActive('/utils/url-encoding') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        >
+                            <LinkIcon size={16} />
+                            URL Encoder
                         </Link>
                     </div>
                 )}
