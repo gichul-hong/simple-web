@@ -1,7 +1,7 @@
 import React from 'react';
-import { MonitoredApplication } from '@/types/monitoring';
+import { AirflowInstanceMetric } from '@/types/monitoring';
 import { cn } from '@/app/lib/utils';
-import { Database, HardDrive, Cpu, CheckCircle2, XCircle } from 'lucide-react';
+import { Database, HardDrive, CheckCircle2, XCircle, Info } from 'lucide-react'; // Added Info icon for generic info
 
 interface MetricProgressProps {
   current: number;
@@ -12,7 +12,7 @@ interface MetricProgressProps {
 }
 
 function MetricProgress({ current, total, unit, label, icon: Icon }: MetricProgressProps) {
-  const percentage = Math.min((current / total) * 100, 100);
+  const percentage = total > 0 ? Math.min((current / total) * 100, 100) : 0;
   // Determine color based on usage
   let color = 'bg-blue-500';
   if (percentage > 90) color = 'bg-red-500';
@@ -26,7 +26,7 @@ function MetricProgress({ current, total, unit, label, icon: Icon }: MetricProgr
             <span className="font-medium">{label}</span>
          </div>
          <span className="text-gray-500">
-            {current.toLocaleString()} / {total.toLocaleString()} {unit}
+            {current.toLocaleString(undefined, { maximumFractionDigits: 2 })} / {total.toLocaleString(undefined, { maximumFractionDigits: 2 })} {unit}
          </span>
       </div>
       <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
@@ -40,82 +40,50 @@ function MetricProgress({ current, total, unit, label, icon: Icon }: MetricProgr
 }
 
 interface MonitoringCardProps {
-  app: MonitoredApplication;
+  metric: AirflowInstanceMetric;
 }
 
-export function MonitoringCard({ app }: MonitoringCardProps) {
-  const { metrics } = app;
-
+export function MonitoringCard({ metric }: MonitoringCardProps) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-4">
         <div>
-           <h3 className="font-bold text-gray-900 truncate w-48" title={app.name}>{app.name}</h3>
-           <p className="text-xs text-gray-500">{app.namespace}</p>
+           <h3 className="font-bold text-gray-900 truncate w-48" title={metric.namespace}>{metric.namespace}</h3>
+           <p className="text-xs text-gray-500">Airflow Instance</p>
         </div>
-        <span className={cn(
-            "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide",
-            app.status === 'Healthy' ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-        )}>
-            {app.status}
-        </span>
       </div>
       
       <div className="space-y-4">
         <MetricProgress 
-            label="S3 Usage" 
-            current={metrics.s3Usage} 
-            total={metrics.s3Quota} 
+            label="Requested Memory" 
+            current={metric.request_memory_used} 
+            total={metric.request_memory_quota} 
             unit="GB" 
-            icon={Database} 
+            icon={HardDrive} 
         />
-        
-        <div className="space-y-3 pt-1">
-             <MetricProgress 
-                label="CPU Request" 
-                current={metrics.cpuRequest} 
-                total={metrics.cpuQuota} 
-                unit="Core" 
-                icon={Cpu} 
-            />
-             <MetricProgress 
-                label="CPU Limit" 
-                current={metrics.cpuLimit} 
-                total={metrics.cpuQuota} 
-                unit="Core" 
-                icon={Cpu} 
-            />
-             <MetricProgress 
-                label="Mem Request" 
-                current={metrics.memRequest} 
-                total={metrics.memQuota} 
-                unit="GB" 
-                icon={HardDrive} 
-            />
-             <MetricProgress 
-                label="Mem Limit" 
-                current={metrics.memLimit} 
-                total={metrics.memQuota} 
-                unit="GB" 
-                icon={HardDrive} 
-            />
-        </div>
+        <MetricProgress 
+            label="Limited Memory" 
+            current={metric.limit_memory_used} 
+            total={metric.limit_memory_quota} 
+            unit="GB" 
+            icon={HardDrive} 
+        />
 
         <div className="pt-2 grid grid-cols-2 gap-3 border-t border-gray-50">
            <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
               <span className="text-xs text-gray-500 font-medium">DB Usage</span>
-              <span className="text-xs font-bold text-gray-700">{metrics.dbUsage} MB</span>
+              <span className="text-xs font-bold text-gray-700">{metric.db_usage.toLocaleString(undefined, { maximumFractionDigits: 2 })} MB</span>
            </div>
            
            <div className="flex items-center justify-center gap-3 bg-gray-50 p-2 rounded-lg">
               <div className="flex items-center gap-1 text-green-600" title="Success Runs">
                 <CheckCircle2 size={14} />
-                <span className="text-xs font-bold">{metrics.dagRunOkCount}</span>
+                <span className="text-xs font-bold">{metric.dag_run_success_count}</span>
               </div>
               <div className="w-px h-3 bg-gray-300"></div>
               <div className="flex items-center gap-1 text-red-500" title="Failed Runs">
                 <XCircle size={14} />
-                <span className="text-xs font-bold">{metrics.dagRunKoCount}</span>
+                <span className="text-xs font-bold">{metric.dag_run_failure_count}</span>
               </div>
            </div>
         </div>

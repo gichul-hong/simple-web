@@ -1,142 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { MonitoredApplication, ApplicationMetrics } from '@/types/monitoring';
-import { Application, PaginatedResponse } from '@/types/application';
-import { allApplications } from '@/app/api/application-dummy/route';
+import { AirflowInstanceMetric } from '@/types/monitoring';
 
 export const dynamic = 'force-dynamic';
 
-function generateMetrics(): ApplicationMetrics {
-  return {
-    s3Usage: Number((Math.random() * 50).toFixed(2)),
-    s3Quota: 100,
-    dbUsage: Number((Math.random() * 500).toFixed(2)),
-    dagRunOkCount: Math.floor(Math.random() * 1000),
-    dagRunKoCount: Math.floor(Math.random() * 50),
-    cpuRequest: Number((Math.random() * 2).toFixed(1)),
-    cpuLimit: Number((Math.random() * 4 + 2).toFixed(1)),
-    cpuQuota: 10,
-    memRequest: Number((Math.random() * 4).toFixed(1)),
-    memLimit: Number((Math.random() * 8 + 4).toFixed(1)),
-    memQuota: 32,
-  };
-}
-
-async function fetchApplicationsData(request: NextRequest): Promise<Application[]> {
-  const backendApiUrl = process.env.BACKEND_API_URL || 'http://localhost:8080';
-  const argoCdProjectName = process.env.ARGOCD_PROJECT_NAME || 'airflow-pools';
+export async function GET(request: NextRequest) {
+  const backendApiUrl = process.env.BACKEND_API_URL;
   const authEnabled = process.env.AUTH_ENABLED === 'true';
 
   const token = await getToken({ req: request });
   const accessToken = token?.accessToken;
 
-  // 1. Try fetching from Real Backend
-  try {
-    // Only attempt if backend URL is configured
-    if (!backendApiUrl) throw new Error("No backend URL configured");
+  if (!backendApiUrl) {
+    console.error("BACKEND_API_URL is not configured.");
+    return NextResponse.json([]);
+  }
 
+  const metricsEndpoint = `${backendApiUrl}/api/v1/metrics/instances`;
+
+  try {
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    const fetchUrl = new URL(`${backendApiUrl}/api/v1/applications`); // Adjusted endpoint for app list
-    if (argoCdProjectName) {
-        fetchUrl.searchParams.append('projectName', argoCdProjectName);
+    const res = await fetch(metricsEndpoint, { headers, cache: 'no-store' });
+
+    if (authEnabled && res.status === 401) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    if (!res.ok) {
+      console.error(`Failed to fetch Airflow metrics: ${res.status} ${res.statusText}`);
+      // Fallback or return empty array on non-ok response
+      return NextResponse.json([]);
     }
 
-    const res = await fetch(fetchUrl.toString(), { headers, cache: 'no-store' });
+    const text = await res.text();
+    const metrics: AirflowInstanceMetric[] = text
+      .split('\n')
+      .filter(line => line.trim() !== '')
+      .map(line => JSON.parse(line));
 
-    if (authEnabled && res.status === 401) throw new Error('Unauthorized');
-    if (!res.ok) throw new Error('Backend unavailable');
-
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data.items || data.data || []);
+    return NextResponse.json(metrics);
   } catch (error) {
-    // 2. Fallback to Dummy Data
-    console.warn("Monitoring: Backend unavailable or not configured.", error);
-    
-    // Only use dummy data if Auth is DISABLED (Dev Mode)
-    if (!authEnabled) {
-        console.warn("Falling back to dummy data (Dev Mode).");
-        return allApplications;
-    }
-
-    return [];
+    console.error("Error fetching Airflow instance metrics:", error);
+    return NextResponse.json([]);
   }
-}
-
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-
-  // 1. Fetch
-  let apps = await fetchApplicationsData(request);
-
-  // 2. Filter
-  const search = searchParams.get('search') || '';
-  if (search) {
-    const lowerSearch = search.toLowerCase();
-    apps = apps.filter(app =>
-      app.name?.toLowerCase().includes(lowerSearch) ||
-      app.project?.toLowerCase().includes(lowerSearch)
-    );
-  }
-
-  // 3. Attach Metrics (Monitoring Specific)
-  const monitoredApps: MonitoredApplication[] = apps.map(app => ({
-    ...app,
-    metrics: generateMetrics()
-  }));
-
-  // 4. Sort
-  const sortBy = searchParams.get('sortBy') || 'name';
-  const sortOrder = searchParams.get('sortOrder') || 'asc';
-
-  monitoredApps.sort((a, b) => {
-    // Safe access guards
-    if (!a || !b) return 0;
-
-    let valA: any;
-    let valB: any;
-
-    if (sortBy.startsWith('metrics.')) {
-      const metricKey = sortBy.split('.')[1] as keyof ApplicationMetrics;
-      valA = a.metrics ? a.metrics[metricKey] : 0;
-      valB = b.metrics ? b.metrics[metricKey] : 0;
-    } else {
-      valA = a[sortBy as keyof typeof a];
-      valB = b[sortBy as keyof typeof b];
-    }
-
-    if (valA === undefined || valA === null) valA = '';
-    if (valB === undefined || valB === null) valB = '';
-
-    if (typeof valA === 'string' && typeof valB === 'string') {
-      valA = valA.toLowerCase();
-      valB = valB.toLowerCase();
-    }
-
-    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  // 5. Paginate
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '12');
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const paginatedData = monitoredApps.slice(startIndex, endIndex);
-
-  const response: PaginatedResponse<MonitoredApplication> = {
-    data: paginatedData,
-    meta: {
-      total: monitoredApps.length,
-      page,
-      limit,
-      totalPages: Math.ceil(monitoredApps.length / limit),
-    },
-  };
-
-  return NextResponse.json(response);
 }

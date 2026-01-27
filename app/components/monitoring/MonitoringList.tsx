@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { MonitoredApplication } from '@/types/monitoring';
-import { PaginatedResponse } from '@/types/application';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { AirflowInstanceMetric } from '@/types/monitoring';
 import { MonitoringCard } from './MonitoringCard';
 import { MonitoringRow } from './MonitoringRow';
 import { Search, RefreshCw, ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
@@ -10,10 +9,10 @@ import { signIn } from 'next-auth/react';
 import { useConfig } from '../providers/ConfigContext';
 
 type SortDirection = 'asc' | 'desc';
-type SortColumn = 'name' | 'metrics.s3Usage' | 'metrics.dbUsage' | 'metrics.dagRunOkCount';
+type SortColumn = keyof AirflowInstanceMetric;
 
 export function MonitoringList() {
-  const [apps, setApps] = useState<MonitoredApplication[]>([]);
+  const [allMetrics, setAllMetrics] = useState<AirflowInstanceMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
@@ -21,28 +20,18 @@ export function MonitoringList() {
   const { authEnabled } = useConfig();
   
   // Sorting
-  const [sortColumn, setSortColumn] = useState<SortColumn>('name');
+  const [sortColumn, setSortColumn] = useState<SortColumn>('namespace');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(60);
 
-  const fetchMonitoringData = useCallback(async (page: number, searchTerm: string, limit: number, sortCol: string, sortDir: string) => {
+  const fetchMonitoringData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        search: searchTerm,
-        sortBy: sortCol,
-        sortOrder: sortDir,
-      });
-      
-      const response = await fetch(`/api/monitoring?${params.toString()}`);
+      const response = await fetch(`/api/monitoring`);
       
       if (authEnabled && response.status === 401) {
         signIn();
@@ -51,28 +40,67 @@ export function MonitoringList() {
 
       if (!response.ok) throw new Error('Failed to fetch metrics');
       
-      const data: PaginatedResponse<MonitoredApplication> = await response.json();
-      setApps(data.data);
-      setTotalPages(data.meta.totalPages);
-      setTotalItems(data.meta.total);
-      setCurrentPage(data.meta.page);
+      const data: AirflowInstanceMetric[] = await response.json();
+      setAllMetrics(data);
     } catch (err) {
         setError('Failed to load monitoring data');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authEnabled]); // Depend on authEnabled
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-        fetchMonitoringData(1, filter, itemsPerPage, sortColumn, sortDirection);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [filter, itemsPerPage, sortColumn, sortDirection, fetchMonitoringData]);
+    fetchMonitoringData();
+    const interval = setInterval(fetchMonitoringData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [fetchMonitoringData]);
+
+  // Client-side filtering
+  const filteredMetrics = useMemo(() => {
+    if (!filter) return allMetrics;
+    const lowerFilter = filter.toLowerCase();
+    return allMetrics.filter(metric => 
+      metric.namespace.toLowerCase().includes(lowerFilter)
+    );
+  }, [allMetrics, filter]);
+
+  // Client-side sorting
+  const sortedMetrics = useMemo(() => {
+    const sortableMetrics = [...filteredMetrics];
+    if (!sortColumn) return sortableMetrics;
+
+    sortableMetrics.sort((a, b) => {
+      const valA = a[sortColumn];
+      const valB = b[sortColumn];
+
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        return sortDirection === 'asc' 
+          ? valA.localeCompare(valB) 
+          : valB.localeCompare(valA);
+      }
+      
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return sortDirection === 'asc' 
+          ? valA - valB 
+          : valB - valA;
+      }
+      return 0;
+    });
+    return sortableMetrics;
+  }, [filteredMetrics, sortColumn, sortDirection]);
+
+  // Client-side pagination
+  const totalItems = sortedMetrics.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginatedMetrics = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return sortedMetrics.slice(startIndex, endIndex);
+  }, [sortedMetrics, currentPage, itemsPerPage]);
 
   const handlePageChange = (newPage: number) => {
       if (newPage >= 1 && newPage <= totalPages) {
-          fetchMonitoringData(newPage, filter, itemsPerPage, sortColumn, sortDirection);
+          setCurrentPage(newPage);
       }
   };
 
@@ -112,10 +140,13 @@ export function MonitoringList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input 
                 type="text" 
-                placeholder="Search monitored apps..." 
+                placeholder="Search by namespace..." 
                 className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
                 value={filter}
-                onChange={(e) => setFilter(e.target.value)}
+                onChange={(e) => {
+                  setFilter(e.target.value);
+                  setCurrentPage(1); // Reset to first page on filter change
+                }}
             />
         </div>
         <div className="flex items-center gap-2">
@@ -136,7 +167,7 @@ export function MonitoringList() {
                 </button>
             </div>
             <button 
-                onClick={() => fetchMonitoringData(currentPage, filter, itemsPerPage, sortColumn, sortDirection)} 
+                onClick={() => fetchMonitoringData()} 
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
@@ -146,7 +177,7 @@ export function MonitoringList() {
         </div>
       </div>
 
-      {loading && !apps.length ? (
+      {loading && !paginatedMetrics.length ? (
         viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {[...Array(8)].map((_, i) => (
@@ -164,8 +195,8 @@ export function MonitoringList() {
         <>
         {viewMode === 'grid' ? (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {apps.map((app) => (
-                    <MonitoringCard key={app.name} app={app} />
+                {paginatedMetrics.map((metric) => (
+                    <MonitoringCard key={metric.namespace} metric={metric} />
                 ))}
              </div>
         ) : (
@@ -174,16 +205,17 @@ export function MonitoringList() {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50/50">
                             <tr>
-                                <SortableHeader column="name" label="Application" className="pl-4 sm:pl-6" />
-                                <SortableHeader column="metrics.s3Usage" label="S3 Usage" />
-                                <SortableHeader column="metrics.dbUsage" label="DB Usage" />
-                                <SortableHeader column="metrics.dagRunOkCount" label="DAG Runs (OK/KO)" />
-                                <th className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resources (Req/Quota)</th>
+                                <SortableHeader column="namespace" label="Namespace" className="pl-4 sm:pl-6" />
+                                <SortableHeader column="dag_run_success_count" label="DAG Success" />
+                                <SortableHeader column="dag_run_failure_count" label="DAG Failure" />
+                                <SortableHeader column="db_usage" label="DB Usage" />
+                                <SortableHeader column="request_memory_used" label="Req Mem Used" />
+                                <SortableHeader column="limit_memory_used" label="Limit Mem Used" />
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                            {apps.map((app) => (
-                                <MonitoringRow key={app.name} app={app} />
+                            {paginatedMetrics.map((metric) => (
+                                <MonitoringRow key={metric.namespace} metric={metric} />
                             ))}
                         </tbody>
                     </table>
@@ -201,7 +233,10 @@ export function MonitoringList() {
                       <span className="text-sm text-gray-700 whitespace-nowrap">Rows per page:</span>
                       <select
                           value={itemsPerPage}
-                          onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                          onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(1); // Reset to first page on items per page change
+                          }}
                           className="block w-20 rounded-md border-gray-300 py-1.5 text-base leading-5 bg-white text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
                       >
                           <option value={10}>10</option>
@@ -259,3 +294,4 @@ export function MonitoringList() {
     </div>
   );
 }
+
