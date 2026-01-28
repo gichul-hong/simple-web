@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
   if (!authEnabled) {
     console.log("Auth is disabled, returning dummy monitoring data.");
-    return NextResponse.json(generateDummyAirflowMetrics());
+    return NextResponse.json({ data: generateDummyAirflowMetrics() });
   }
 
   const token = await getToken({ req: request });
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   if (!backendApiUrl) {
     console.error("BACKEND_API_URL is not configured.");
     // Fallback to dummy data if backend is not configured but auth is on
-    return NextResponse.json(generateDummyAirflowMetrics());
+    return NextResponse.json({ data: generateDummyAirflowMetrics() });
   }
 
   const metricsEndpoint = `${backendApiUrl}/api/v1/metrics/instances`;
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     if (!res.ok) {
       console.error(`Failed to fetch Airflow metrics: ${res.status} ${res.statusText}`);
       // Fallback to dummy data on non-ok response
-      return NextResponse.json(generateDummyAirflowMetrics());
+      return NextResponse.json({ data: generateDummyAirflowMetrics() });
     }
 
     const text = await res.text();
@@ -61,10 +61,10 @@ export async function GET(request: NextRequest) {
       .filter(line => line.trim() !== '')
       .map(line => JSON.parse(line));
 
-    return NextResponse.json(metrics);
+    return NextResponse.json({ data: metrics });
   } catch (error) {
     console.error("Error fetching Airflow instance metrics:", error);
     // Fallback to dummy data on any other error
-    return NextResponse.json(generateDummyAirflowMetrics());
+    return NextResponse.json({ data: generateDummyAirflowMetrics() });
   }
 }

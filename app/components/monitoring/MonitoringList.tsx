@@ -36,7 +36,8 @@ export function MonitoringList() {
 
       if (!response.ok) throw new Error('Failed to fetch metrics');
       
-      const data: AirflowInstanceMetric[] = await response.json();
+      const responseData = await response.json();
+      const data: AirflowInstanceMetric[] = responseData.data || []; // Extract data from response object
       setAllMetrics(data);
     } catch (err) {
         setError('Failed to load monitoring data');
