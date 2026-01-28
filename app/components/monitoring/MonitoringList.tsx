@@ -37,7 +37,15 @@ export function MonitoringList() {
       if (!response.ok) throw new Error('Failed to fetch metrics');
       
       const responseData = await response.json();
-      const data: AirflowInstanceMetric[] = responseData.data || []; // Extract data from response object
+      console.log('Raw API Response Data:', responseData); // 이 라인은 유지
+      let extractedData = responseData.data;
+
+      // 만약 responseData.data가 이중 배열이라면 첫 번째 배열을 사용
+      if (Array.isArray(extractedData) && extractedData.length > 0 && Array.isArray(extractedData[0])) {
+        extractedData = extractedData[0];
+      }
+      
+      const data: AirflowInstanceMetric[] = extractedData || []; // Extract data from response object
       setAllMetrics(data);
     } catch (err) {
         setError('Failed to load monitoring data');
