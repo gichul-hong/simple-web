@@ -17,17 +17,20 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
          </div>
       </td>
       
-      {/* DagRuns */}
-      <td className="px-3 py-4">
-        <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
-                <CheckCircle2 size={12} />
-                <span className="text-xs font-bold">{metric.dag_run_success_count ?? 'N/A'}</span>
-            </div>
-            <div className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-0.5 rounded-md">
-                <XCircle size={12} />
-                <span className="text-xs font-bold">{metric.dag_run_failure_count ?? 'N/A'}</span>
-            </div>
+      {/* Dag O/X */}
+      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
+        <div className="flex items-center gap-1.5">
+          <span className="text-green-600 font-bold">{metric.dag_run_success_count ?? 'N/A'}</span>
+          <span>/</span>
+          <span className="text-red-500 font-bold">{metric.dag_run_failure_count ?? 'N/A'}</span>
+        </div>
+      </td>
+
+      {/* S3 Usage */}
+      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
+        <div className="flex items-center gap-1.5">
+            <Database size={14} className="text-gray-400" />
+            {metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB
         </div>
       </td>
 

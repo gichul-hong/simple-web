@@ -195,8 +195,8 @@ export function MonitoringList() {
                         <thead className="bg-gray-50/50">
                             <tr>
                                 <SortableHeader column="namespace" label="Namespace" className="pl-4 sm:pl-6" />
-                                <SortableHeader column="dag_run_success_count" label="DAG Success" />
-                                <SortableHeader column="dag_run_failure_count" label="DAG Failure" />
+                                <SortableHeader column="dag_run_success_count" label="DAG O/X" />
+                                <SortableHeader column="s3BucketUsage" label="S3 Usage" />
                                 <SortableHeader column="db_usage" label="DB Usage" />
                                 <SortableHeader column="request_memory_used" label="Req Mem Used" />
                                 <SortableHeader column="limit_memory_used" label="Limit Mem Used" />

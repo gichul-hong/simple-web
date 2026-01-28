@@ -71,11 +71,16 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
             icon={HardDrive} 
         />
 
-        <div className="pt-2 grid grid-cols-2 gap-3 border-t border-gray-50">
+        <div className="pt-2 grid grid-cols-3 gap-3 border-t border-gray-50">
            <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
               <span className="text-xs text-gray-500 font-medium">DB Usage</span>
               <span className="text-xs font-bold text-gray-700">{metric.db_usage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB</span>
            </div>
+
+           <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+              <span className="text-xs text-gray-500 font-medium">S3 Usage</span>
+              <span className="text-xs font-bold text-gray-700">{metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
+            </div>
            
            <div className="flex items-center justify-center gap-3 bg-gray-50 p-2 rounded-lg">
               <div className="flex items-center gap-1 text-green-600" title="Success Runs">
