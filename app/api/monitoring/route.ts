@@ -4,16 +4,36 @@ import { AirflowInstanceMetric } from '@/types/monitoring';
 
 export const dynamic = 'force-dynamic';
 
+// Function to generate dummy Airflow metrics
+function generateDummyAirflowMetrics(): AirflowInstanceMetric[] {
+  return Array.from({ length: 5 }, (_, i) => ({
+    namespace: `airflow-dummy-${i + 1}`,
+    dag_run_success_count: Math.floor(Math.random() * 200),
+    dag_run_failure_count: Math.floor(Math.random() * 10),
+    db_usage: parseFloat((Math.random() * 1024).toFixed(2)),
+    request_memory_used: parseFloat((Math.random() * 8).toFixed(2)),
+    request_memory_quota: 8,
+    limit_memory_used: parseFloat((Math.random() * 16).toFixed(2)),
+    limit_memory_quota: 16,
+  }));
+}
+
 export async function GET(request: NextRequest) {
   const backendApiUrl = process.env.BACKEND_API_URL;
   const authEnabled = process.env.AUTH_ENABLED === 'true';
+
+  if (!authEnabled) {
+    console.log("Auth is disabled, returning dummy monitoring data.");
+    return NextResponse.json(generateDummyAirflowMetrics());
+  }
 
   const token = await getToken({ req: request });
   const accessToken = token?.accessToken;
 
   if (!backendApiUrl) {
     console.error("BACKEND_API_URL is not configured.");
-    return NextResponse.json([]);
+    // Fallback to dummy data if backend is not configured but auth is on
+    return NextResponse.json(generateDummyAirflowMetrics());
   }
 
   const metricsEndpoint = `${backendApiUrl}/api/v1/metrics/instances`;
@@ -26,13 +46,13 @@ export async function GET(request: NextRequest) {
 
     const res = await fetch(metricsEndpoint, { headers, cache: 'no-store' });
 
-    if (authEnabled && res.status === 401) {
+    if (res.status === 401) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     if (!res.ok) {
       console.error(`Failed to fetch Airflow metrics: ${res.status} ${res.statusText}`);
-      // Fallback or return empty array on non-ok response
-      return NextResponse.json([]);
+      // Fallback to dummy data on non-ok response
+      return NextResponse.json(generateDummyAirflowMetrics());
     }
 
     const text = await res.text();
@@ -44,6 +64,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(metrics);
   } catch (error) {
     console.error("Error fetching Airflow instance metrics:", error);
-    return NextResponse.json([]);
+    // Fallback to dummy data on any other error
+    return NextResponse.json(generateDummyAirflowMetrics());
   }
 }

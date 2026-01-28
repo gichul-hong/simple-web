@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { AirflowInstanceMetric } from '@/types/monitoring';
 import { MonitoringCard } from './MonitoringCard';
 import { MonitoringRow } from './MonitoringRow';
-import { Search, RefreshCw, ChevronLeft, ChevronRight, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, RefreshCw, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useConfig } from '../providers/ConfigContext';
 
@@ -22,10 +22,6 @@ export function MonitoringList() {
   // Sorting
   const [sortColumn, setSortColumn] = useState<SortColumn>('namespace');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(60);
 
   const fetchMonitoringData = useCallback(async () => {
     setLoading(true);
@@ -88,9 +84,6 @@ export function MonitoringList() {
     });
     return sortableMetrics;
   }, [filteredMetrics, sortColumn, sortDirection]);
-
-  // Pagination is removed.
-  const totalItems = sortedMetrics.length;
 
   const handleSort = (column: SortColumn) => {
       if (sortColumn === column) {
