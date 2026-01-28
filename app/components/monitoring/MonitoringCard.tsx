@@ -12,7 +12,9 @@ interface MetricProgressProps {
 }
 
 function MetricProgress({ current, total, unit, label, icon: Icon }: MetricProgressProps) {
-  const percentage = total > 0 ? Math.min((current / total) * 100, 100) : 0;
+  const c = current ?? 0;
+  const t = total ?? 0;
+  const percentage = t > 0 ? Math.min((c / t) * 100, 100) : 0;
   // Determine color based on usage
   let color = 'bg-blue-500';
   if (percentage > 90) color = 'bg-red-500';
@@ -26,7 +28,7 @@ function MetricProgress({ current, total, unit, label, icon: Icon }: MetricProgr
             <span className="font-medium">{label}</span>
          </div>
          <span className="text-gray-500">
-            {current.toLocaleString(undefined, { maximumFractionDigits: 2 })} / {total.toLocaleString(undefined, { maximumFractionDigits: 2 })} {unit}
+            {current?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} / {total?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} {unit}
          </span>
       </div>
       <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
@@ -72,18 +74,18 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
         <div className="pt-2 grid grid-cols-2 gap-3 border-t border-gray-50">
            <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
               <span className="text-xs text-gray-500 font-medium">DB Usage</span>
-              <span className="text-xs font-bold text-gray-700">{metric.db_usage.toLocaleString(undefined, { maximumFractionDigits: 2 })} MB</span>
+              <span className="text-xs font-bold text-gray-700">{metric.db_usage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB</span>
            </div>
            
            <div className="flex items-center justify-center gap-3 bg-gray-50 p-2 rounded-lg">
               <div className="flex items-center gap-1 text-green-600" title="Success Runs">
                 <CheckCircle2 size={14} />
-                <span className="text-xs font-bold">{metric.dag_run_success_count}</span>
+                <span className="text-xs font-bold">{metric.dag_run_success_count ?? 'N/A'}</span>
               </div>
               <div className="w-px h-3 bg-gray-300"></div>
               <div className="flex items-center gap-1 text-red-500" title="Failed Runs">
                 <XCircle size={14} />
-                <span className="text-xs font-bold">{metric.dag_run_failure_count}</span>
+                <span className="text-xs font-bold">{metric.dag_run_failure_count ?? 'N/A'}</span>
               </div>
            </div>
         </div>

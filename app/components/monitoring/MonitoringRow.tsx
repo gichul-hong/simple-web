@@ -22,11 +22,11 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
         <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
                 <CheckCircle2 size={12} />
-                <span className="text-xs font-bold">{metric.dag_run_success_count}</span>
+                <span className="text-xs font-bold">{metric.dag_run_success_count ?? 'N/A'}</span>
             </div>
             <div className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-0.5 rounded-md">
                 <XCircle size={12} />
-                <span className="text-xs font-bold">{metric.dag_run_failure_count}</span>
+                <span className="text-xs font-bold">{metric.dag_run_failure_count ?? 'N/A'}</span>
             </div>
         </div>
       </td>
@@ -35,7 +35,7 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
         <div className="flex items-center gap-1.5">
             <Database size={14} className="text-gray-400" />
-            {metric.db_usage.toLocaleString(undefined, { maximumFractionDigits: 2 })} MB
+            {metric.db_usage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB
         </div>
       </td>
 
@@ -43,7 +43,7 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
         <div className="flex items-center gap-1.5">
             <HardDrive size={14} className="text-gray-400" />
-            {metric.request_memory_used.toLocaleString(undefined, { maximumFractionDigits: 2 })} / {metric.request_memory_quota.toLocaleString(undefined, { maximumFractionDigits: 2 })} GB
+            {(metric.request_memory_used?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} / {(metric.request_memory_quota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} GB
         </div>
       </td>
       
@@ -51,7 +51,7 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
         <div className="flex items-center gap-1.5">
             <HardDrive size={14} className="text-gray-400" />
-            {metric.limit_memory_used.toLocaleString(undefined, { maximumFractionDigits: 2 })} / {metric.limit_memory_quota.toLocaleString(undefined, { maximumFractionDigits: 2 })} GB
+            {(metric.limit_memory_used?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} / {(metric.limit_memory_quota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} GB
         </div>
       </td>
     </tr>
