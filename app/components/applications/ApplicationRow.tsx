@@ -63,7 +63,7 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
       <td className="py-4 pl-3 pr-4 sm:pr-6 text-right whitespace-nowrap text-sm font-medium">
         <div className="flex items-center justify-end gap-2">
             {/* Airflow Link */}
-            {app.externalURL && (
+            {app.externalURL ? (
                 <Link 
                     href={app.externalURL} 
                     target="_blank" 
@@ -72,6 +72,13 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
                 >
                     <Wind size={16} />
                 </Link>
+            ) : (
+                <span 
+                    className="p-1.5 rounded-md text-gray-300 cursor-not-allowed"
+                    title="Airflow not available"
+                >
+                    <Wind size={16} />
+                </span>
             )}
 
             {/* Grafana Link */}
@@ -85,7 +92,7 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
             </Link>
 
             {/* FileBrowser Link */}
-            {app.fileBrowserUrl && (
+            {app.fileBrowserUrl ? (
                 <Link 
                     href={app.fileBrowserUrl}
                     target="_blank"
@@ -94,6 +101,13 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
                 >
                     <FolderOpen size={16} />
                 </Link>
+            ) : (
+                <span
+                    className="p-1.5 rounded-md text-gray-300 cursor-not-allowed"
+                    title="File Browser not available"
+                >
+                    <FolderOpen size={16} />
+                </span>
             )}
 
             {/* GitHub Link */}

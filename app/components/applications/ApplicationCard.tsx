@@ -99,19 +99,30 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
                 <div className="h-3 w-px bg-gray-200"></div>
 
                 <div className="flex items-center gap-2">
-                     {app.externalURL && (
+                    {app.externalURL ? (
                         <Link href={app.externalURL} target="_blank" className="hover:text-blue-600 transition-colors" title="Airflow">
                             <Wind size={14} />
                         </Link>
+                    ) : (
+                        <span className="text-gray-300 cursor-not-allowed" title="Airflow not available">
+                            <Wind size={14} />
+                        </span>
                     )}
+
                     <Link href={grafanaUrl} target="_blank" className="hover:text-orange-600 transition-colors" title="Grafana">
                         <Activity size={14} />
                     </Link>
-                     {app.fileBrowserUrl && (
+
+                    {app.fileBrowserUrl ? (
                         <Link href={app.fileBrowserUrl} target="_blank" className="hover:text-amber-600 transition-colors" title="File Browser">
                             <FolderOpen size={14} />
                         </Link>
+                    ) : (
+                        <span className="text-gray-300 cursor-not-allowed" title="File Browser not available">
+                            <FolderOpen size={14} />
+                        </span>
                     )}
+                    
                     <Link href={githubUrl} target="_blank" className="hover:text-gray-900 transition-colors" title="GitHub">
                          <Github size={14} />
                     </Link>
