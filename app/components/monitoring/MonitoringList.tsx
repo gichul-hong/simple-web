@@ -19,15 +19,18 @@ export function MonitoringList() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const { authEnabled } = useConfig();
   
+  // New state for period
+  const [period, setPeriod] = useState<number>(1);
+
   // Sorting
   const [sortColumn, setSortColumn] = useState<SortColumn>('namespace');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
-  const fetchMonitoringData = useCallback(async () => {
+  const fetchMonitoringData = useCallback(async (currentPeriod: number) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/monitoring`);
+      const response = await fetch(`/api/monitoring?period=${currentPeriod}`);
       
       if (authEnabled && response.status === 401) {
         signIn();
@@ -37,28 +40,27 @@ export function MonitoringList() {
       if (!response.ok) throw new Error('Failed to fetch metrics');
       
       const responseData = await response.json();
-      console.log('Raw API Response Data:', responseData); // 이 라인은 유지
       let extractedData = responseData.data;
 
-      // 만약 responseData.data가 이중 배열이라면 첫 번째 배열을 사용
+      // Handle nested array if present
       if (Array.isArray(extractedData) && extractedData.length > 0 && Array.isArray(extractedData[0])) {
         extractedData = extractedData[0];
       }
       
-      const data: AirflowInstanceMetric[] = extractedData || []; // Extract data from response object
+      const data: AirflowInstanceMetric[] = extractedData || [];
       setAllMetrics(data);
     } catch (err) {
         setError('Failed to load monitoring data');
     } finally {
       setLoading(false);
     }
-  }, [authEnabled]); // Depend on authEnabled
+  }, [authEnabled]);
 
   useEffect(() => {
-    fetchMonitoringData();
-    const interval = setInterval(fetchMonitoringData, 30000); // Refresh every 30 seconds
+    fetchMonitoringData(period);
+    const interval = setInterval(() => fetchMonitoringData(period), 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
-  }, [fetchMonitoringData]);
+  }, [fetchMonitoringData, period]);
 
   // Client-side filtering
   const filteredMetrics = useMemo(() => {
@@ -126,17 +128,31 @@ export function MonitoringList() {
   return (
     <div className="space-y-6">
        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input 
-                type="text" 
-                placeholder="Search by namespace..." 
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                value={filter}
-                onChange={(e) => {
-                  setFilter(e.target.value);
-                }}
-            />
+        <div className="flex items-center gap-4">
+            <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input 
+                    type="text" 
+                    placeholder="Search by namespace..." 
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                />
+            </div>
+            <div className="flex items-center p-1 bg-gray-100 rounded-lg border border-gray-200">
+                {[1, 7, 30].map(p => (
+                    <button
+                        key={p}
+                        onClick={() => setPeriod(p)}
+                        className={cn(
+                            "px-3 py-1.5 text-xs font-semibold rounded-md transition-all",
+                            period === p ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                        )}
+                    >
+                        {p}D
+                    </button>
+                ))}
+            </div>
         </div>
         <div className="flex items-center gap-2">
             <div className="flex items-center p-1 bg-gray-100 rounded-lg border border-gray-200">
@@ -156,7 +172,7 @@ export function MonitoringList() {
                 </button>
             </div>
             <button 
-                onClick={() => fetchMonitoringData()} 
+                onClick={() => fetchMonitoringData(period)} 
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >

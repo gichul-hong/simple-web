@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
   }
 
   const metricsEndpoint = `${backendApiUrl}/api/v1/metrics/instances`;
+  const period = request.nextUrl.searchParams.get('period');
 
   try {
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
@@ -45,7 +46,12 @@ export async function GET(request: NextRequest) {
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    const res = await fetch(metricsEndpoint, { headers, cache: 'no-store' });
+    const url = new URL(metricsEndpoint);
+    if (period) {
+      url.searchParams.append('period', period);
+    }
+
+    const res = await fetch(url.toString(), { headers, cache: 'no-store' });
 
     if (res.status === 401) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
