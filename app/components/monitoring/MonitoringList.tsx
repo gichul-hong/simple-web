@@ -7,6 +7,7 @@ import { MonitoringRow } from './MonitoringRow';
 import { Search, RefreshCw, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useConfig } from '../providers/ConfigContext';
+import { cn } from '@/app/lib/utils';
 
 type SortDirection = 'asc' | 'desc';
 type SortColumn = keyof AirflowInstanceMetric;
