@@ -1,7 +1,7 @@
 import React from 'react';
 import { AirflowInstanceMetric } from '@/types/monitoring';
 import { cn } from '@/app/lib/utils';
-import { Database, HardDrive, CheckCircle2, XCircle, Info } from 'lucide-react'; // Added Info icon for generic info
+import { Database, HardDrive, CheckCircle2, XCircle, Info, Clock } from 'lucide-react'; // Added Info icon for generic info
 
 interface MetricProgressProps {
   current: number;
@@ -9,9 +9,10 @@ interface MetricProgressProps {
   unit: string;
   label: string;
   icon: React.ElementType;
+  isDynamic?: boolean;
 }
 
-function MetricProgress({ current, total, unit, label, icon: Icon }: MetricProgressProps) {
+function MetricProgress({ current, total, unit, label, icon: Icon, isDynamic = false }: MetricProgressProps) {
   const c = current ?? 0;
   const t = total ?? 0;
   const percentage = t > 0 ? Math.min((c / t) * 100, 100) : 0;
@@ -23,9 +24,10 @@ function MetricProgress({ current, total, unit, label, icon: Icon }: MetricProgr
   return (
     <div className="space-y-1">
       <div className="flex justify-between items-center text-xs">
-         <div className="flex items-center gap-1.5 text-gray-600">
+         <div className="flex items-center gap-1.5 text-gray-600" title={isDynamic ? "Value changes based on selected period" : ""}>
             <Icon size={12} />
             <span className="font-medium">{label}</span>
+            {isDynamic && <Clock size={12} className="ml-1 text-gray-400" />}
          </div>
          <span className="text-gray-500">
             {current?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} / {total?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} {unit}
@@ -62,6 +64,7 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
             total={metric.request_memory_quota} 
             unit="GB" 
             icon={HardDrive} 
+            isDynamic={true}
         />
         <MetricProgress 
             label="Limited Memory" 
@@ -69,6 +72,7 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
             total={metric.limit_memory_quota} 
             unit="GB" 
             icon={HardDrive} 
+            isDynamic={true}
         />
 
         <div className="pt-2 grid grid-cols-3 gap-3 border-t border-gray-50">

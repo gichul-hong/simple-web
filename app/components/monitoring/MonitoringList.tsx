@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { AirflowInstanceMetric } from '@/types/monitoring';
 import { MonitoringCard } from './MonitoringCard';
 import { MonitoringRow } from './MonitoringRow';
-import { Search, RefreshCw, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, RefreshCw, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown, Clock } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useConfig } from '../providers/ConfigContext';
 import { cn } from '@/app/lib/utils';
@@ -113,14 +113,15 @@ export function MonitoringList() {
         : <ArrowDown size={14} className="ml-1 text-blue-600" />;
   };
 
-  const SortableHeader = ({ column, label, className = "" }: { column: SortColumn, label: string, className?: string }) => (
+  const SortableHeader = ({ column, label, className = "", isDynamic = false }: { column: SortColumn, label: string, className?: string, isDynamic?: boolean }) => (
       <th 
         scope="col" 
         className={`px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none ${className}`}
         onClick={() => handleSort(column)}
       >
-        <div className="flex items-center">
+        <div className="flex items-center" title={isDynamic ? "Value changes based on selected period" : ""}>
             {label}
+            {isDynamic && <Clock size={12} className="ml-1.5 text-gray-400" />}
             <SortIcon column={column} />
         </div>
       </th>
@@ -215,8 +216,8 @@ export function MonitoringList() {
                                 <SortableHeader column="dag_run_success_count" label="DAG O/X" />
                                 <SortableHeader column="s3BucketUsage" label="S3 Usage" />
                                 <SortableHeader column="db_usage" label="DB Usage" />
-                                <SortableHeader column="request_memory_used" label="Req Mem Used" />
-                                <SortableHeader column="limit_memory_used" label="Limit Mem Used" />
+                                <SortableHeader column="request_memory_used" label="Req Mem Used" isDynamic={true} />
+                                <SortableHeader column="limit_memory_used" label="Limit Mem Used" isDynamic={true} />
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
