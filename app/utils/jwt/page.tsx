@@ -81,50 +81,6 @@ export default function JwtParserPage() {
     setToken('');
   };
 
-  const JsonValueRenderer = ({ rKey, value }: { rKey: string, value: any }) => {
-    const isTimestamp = ['exp', 'iat', 'nbf', 'auth_time'].includes(rKey) && typeof value === 'number';
-    
-    if (isTimestamp) {
-        const dateStr = new Date(value * 1000).toUTCString();
-        return (
-            <span 
-                className="font-bold cursor-help underline decoration-dotted decoration-2 underline-offset-2" 
-                title={dateStr}
-            >
-                {value}
-            </span>
-        );
-    }
-    
-    if (typeof value === 'string') return <span>"{value}"</span>;
-    if (value === null) return <span>null</span>;
-    if (typeof value === 'boolean') return <span>{value.toString()}</span>;
-    if (Array.isArray(value)) return <span>[{value.length} items]</span>; // Simplified for array
-    if (typeof value === 'object') return <span>{'{...}'}</span>; // Simplified for nested object
-
-    return <span>{value}</span>;
-  };
-
-  const JsonViewer = ({ data, colorClass }: { data: any, colorClass: string }) => {
-    if (!data) return <span className="text-gray-300 italic">waiting for input...</span>;
-    
-    return (
-        <div className={`font-mono text-sm ${colorClass} whitespace-pre-wrap break-all`}>
-            {'{'}
-            <div className="pl-4">
-                {Object.entries(data).map(([key, value], index, arr) => (
-                <div key={key}>
-                    <span className="font-semibold">"{key}"</span>:{" "}
-                    <JsonValueRenderer rKey={key} value={value} />
-                    {index < arr.length - 1 && ","}
-                </div>
-                ))}
-            </div>
-            {'}'}
-        </div>
-    );
-  };
-
   return (
     <div className="space-y-8">
       <div>
@@ -183,20 +139,19 @@ export default function JwtParserPage() {
           <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
             <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
               <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Header</span>
-              <span className="text-xs font-mono text-gray-400">Algorithm & Token Type</span>
+              <button 
+                  onClick={() => header && handleCopy(JSON.stringify(header, null, 2))}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!header}
+                  title="Copy Header"
+              >
+                  <Copy size={14} />
+              </button>
             </div>
-            <div className="p-4 relative group">
+            <div className="p-4 min-h-[120px]">
                <pre className="font-mono text-sm text-red-500 whitespace-pre-wrap break-all">
                 {header ? JSON.stringify(header, null, 2) : <span className="text-gray-300 italic">waiting for input...</span>}
                </pre>
-               {header && (
-                   <button 
-                        onClick={() => handleCopy(JSON.stringify(header, null, 2))}
-                        className="absolute top-2 right-2 p-1.5 bg-white border border-gray-200 rounded-md text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                   >
-                       <Copy size={14} />
-                   </button>
-               )}
             </div>
           </div>
 
@@ -204,18 +159,19 @@ export default function JwtParserPage() {
           <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
             <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
               <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Payload</span>
-              <span className="text-xs font-mono text-gray-400">Data</span>
+               <button 
+                  onClick={() => payload && handleCopy(JSON.stringify(payload, null, 2))}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!payload}
+                  title="Copy Payload"
+              >
+                  <Copy size={14} />
+              </button>
             </div>
-            <div className="p-4 relative group">
-               <JsonViewer data={payload} colorClass="text-purple-600" />
-                {payload && (
-                   <button 
-                        onClick={() => handleCopy(JSON.stringify(payload, null, 2))}
-                        className="absolute top-2 right-2 p-1.5 bg-white border border-gray-200 rounded-md text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                   >
-                       <Copy size={14} />
-                   </button>
-               )}
+            <div className="p-4 min-h-[200px]">
+               <pre className="font-mono text-sm text-purple-600 whitespace-pre-wrap break-all">
+                {payload ? JSON.stringify(payload, null, 2) : <span className="text-gray-300 italic">waiting for input...</span>}
+               </pre>
             </div>
           </div>
 
@@ -223,20 +179,19 @@ export default function JwtParserPage() {
           <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
             <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
               <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Signature</span>
-              <span className="text-xs font-mono text-gray-400">Verify Signature</span>
+              <button 
+                  onClick={() => signature && handleCopy(signature)}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!signature}
+                  title="Copy Signature"
+              >
+                  <Copy size={14} />
+              </button>
             </div>
-            <div className="p-4 relative group">
+            <div className="p-4">
                <pre className="font-mono text-sm text-blue-500 whitespace-pre-wrap break-all">
                 {signature ? signature : <span className="text-gray-300 italic">waiting for input...</span>}
                </pre>
-               {signature && (
-                   <button 
-                        onClick={() => handleCopy(signature)}
-                        className="absolute top-2 right-2 p-1.5 bg-white border border-gray-200 rounded-md text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                   >
-                       <Copy size={14} />
-                   </button>
-               )}
             </div>
           </div>
 
