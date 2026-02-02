@@ -4,13 +4,14 @@ import { useState, useRef, useEffect } from 'react';
 import { Cat, LayoutDashboard, Activity, FileCode, ExternalLink as ExternalLinkIcon, Wrench, ChevronDown, FileJson, Binary, Link as LinkIcon } from 'lucide-react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useConfig } from '../providers/ConfigContext';
 import GlobalSearch from './GlobalSearch';
 
 export function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { authEnabled, argoCdBaseUrl } = useConfig();
   const [isUtilsOpen, setIsUtilsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -30,12 +31,20 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const createHref = (path: string) => {
+    const q = searchParams.get('q');
+    if (!q) return path;
+    const params = new URLSearchParams();
+    params.set('q', q);
+    return `${path}?${params.toString()}`;
+  };
+
   return (
     <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-4">
+            <Link href={createHref('/')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-2 rounded-xl text-white shadow-md shadow-orange-200/50">
                   <Cat size={24} strokeWidth={2.5} />
               </div>
@@ -44,10 +53,12 @@ export function Navbar() {
               </span>
             </Link>
 
+            <div className="w-px h-6 bg-gray-200" />
+
             {showNav && (
               <div className="hidden md:flex items-center gap-1">
                 <Link 
-                  href="/" 
+                  href={createHref('/')} 
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/') 
                       ? 'bg-orange-50 text-orange-700' 
@@ -58,7 +69,7 @@ export function Navbar() {
                   Applications
                 </Link>
                 <Link 
-                  href="/monitoring" 
+                  href={createHref('/monitoring')} 
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/monitoring') 
                       ? 'bg-orange-50 text-orange-700' 
@@ -70,7 +81,11 @@ export function Navbar() {
                 </Link>
               </div>
             )}
+            
+            <GlobalSearch />
+          </div>
 
+          <div className="flex items-center gap-4">
             {/* Utils Dropdown - Always visible */}
             <div className="hidden md:block relative" ref={dropdownRef}>
                 <button 
@@ -87,7 +102,7 @@ export function Navbar() {
                 </button>
 
                 {isUtilsOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg ring-1 ring-black/5 p-1 animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg ring-1 ring-black/5 p-1 animate-in fade-in slide-in-from-top-2">
                         <Link 
                             href="/utils/jwt" 
                             onClick={() => setIsUtilsOpen(false)}
@@ -145,13 +160,9 @@ export function Navbar() {
                 </a>
               </div>
             )}
-          </div>
-          
-          <div className="flex-1 flex justify-center px-8">
-            <GlobalSearch />
-          </div>
+            
+            <div className="w-px h-6 bg-gray-200" />
 
-          <div className="flex items-center gap-4">
              {session ? (
                  <div className="flex items-center gap-4">
                      <div className="text-sm text-right hidden sm:block">
