@@ -37,27 +37,17 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-# ConfigMap Configuration
-# This content will be mounted as a file at /app/.env
-appConfig:
-  mountPath: "/app/.env"
-  subPath: ".env"
-  content: |
-    # Application Theme (e.g., orange, blue, green)
-    APP_THEME=green
-    
-    # Server-side Environment Variables
-    BACKEND_API_URL=http://backend-service:8080
-    ARGOCD_PROJECT_NAME=airflow-pools
-    
-    # Client-side Environment Variables
-    AUTH_ENABLED=true
-    ARGOCD_BASE_URL=https://argocd.example.com
-    GITHUB_BASE_URL=https://github.com
-    GRAFANA_BASE_URL=https://grafana.example.com
-    
-    # SSL/TLS Configuration
-    NODE_TLS_REJECT_UNAUTHORIZED=0
+# Environment variables to be injected into the container.
+# These will be populated into a ConfigMap and then sourced by the deployment.
+envVars:
+  APP_THEME: "green"
+  BACKEND_API_URL: "http://backend-service:8080"
+  ARGOCD_PROJECT_NAME: "airflow-pools"
+  AUTH_ENABLED: "true"
+  ARGOCD_BASE_URL: "https://argocd.example.com"
+  GITHUB_BASE_URL: "https://github.com"
+  GRAFANA_BASE_URL: "https://grafana.example.com"
+  NODE_TLS_REJECT_UNAUTHORIZED: "0"
 
 # Optional: Mount root-ca.crt if needed
 # caCert:
