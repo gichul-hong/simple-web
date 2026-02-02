@@ -5,7 +5,8 @@ metadata:
   labels:
     app: {{ .Release.Name }}
 data:
-{{- toYaml .Values.envVars | nindent 2 }}
+  .env: |
+{{ .Values.appConfig.content | indent 4 }}
   
   {{- if .Values.caCert }}
   {{- if .Values.caCert.enabled }}

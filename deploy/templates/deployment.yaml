@@ -25,13 +25,13 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           
-          # Inject environment variables from ConfigMap
-          envFrom:
-            - configMapRef:
-                name: {{ .Release.Name }}-config
-          
-          # Volume Mounts for Config (e.g., certs)
+          # Volume Mounts for Config
           volumeMounts:
+            - name: config-volume
+              mountPath: {{ .Values.appConfig.mountPath }}
+              subPath: {{ .Values.appConfig.subPath }}
+              readOnly: true
+            
             {{- if .Values.caCert }}
             {{- if .Values.caCert.enabled }}
             - name: config-volume
@@ -42,12 +42,7 @@ spec:
             {{- end }}
 
       # Volumes Definition
-      # This volume is still needed if caCert is enabled
-      {{- if .Values.caCert }}
-      {{- if .Values.caCert.enabled }}
       volumes:
         - name: config-volume
           configMap:
             name: {{ .Release.Name }}-config
-      {{- end }}
-      {{- end }}
