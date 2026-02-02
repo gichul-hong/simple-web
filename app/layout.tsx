@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} theme-${appTheme}`}>
       <body
-        className={`antialiased bg-background text-foreground min-h-screen`}
+        className={`font-sans antialiased bg-background text-foreground min-h-screen`}
       >
         <Providers>
           <Navbar />
