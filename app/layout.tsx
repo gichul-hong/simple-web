@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./components/providers/Providers";
 import { Navbar } from "./components/layout/Navbar";
-import { headers } from 'next/headers';
 
 const geistSans = localFont({
   src: "./fonts/Geist-Variable.woff2",
@@ -21,8 +20,6 @@ export const metadata: Metadata = {
   title: "ArgoDash - Application Manager",
   description: "Manage your applications via ArgoCD",
 };
-
-  headers(); // Opt into dynamic rendering
 
 const appTheme = process.env.APP_THEME || 'orange';
 
