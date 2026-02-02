@@ -43,6 +43,9 @@ appConfig:
   mountPath: "/app/.env"
   subPath: ".env"
   content: |
+    # Application Theme (e.g., orange, blue, green)
+    APP_THEME=green
+    
     # Server-side Environment Variables
     BACKEND_API_URL=http://backend-service:8080
     ARGOCD_PROJECT_NAME=airflow-pools
