@@ -13,9 +13,9 @@ const statusConfig = {
   Healthy: { color: 'text-green-600', icon: CheckCircle, bg: 'bg-green-100', border: 'border-green-200' },
   Progressing: { color: 'text-blue-600', icon: Loader2, bg: 'bg-blue-100', border: 'border-blue-200' },
   Degraded: { color: 'text-red-600', icon: AlertCircle, bg: 'bg-red-100', border: 'border-red-200' },
-  Suspended: { color: 'text-gray-600', icon: Box, bg: 'bg-gray-100', border: 'border-gray-200' },
-  Missing: { color: 'text-orange-600', icon: XCircle, bg: 'bg-orange-100', border: 'border-orange-200' },
-  Unknown: { color: 'text-gray-500', icon: HelpCircle, bg: 'bg-gray-100', border: 'border-gray-200' },
+  Suspended: { color: 'text-foreground/70', icon: Box, bg: 'bg-gray-100', border: 'border-border' },
+  Missing: { color: 'text-primary-text', icon: XCircle, bg: 'bg-primary-light', border: 'border-primary' },
+  Unknown: { color: 'text-foreground/60', icon: HelpCircle, bg: 'bg-gray-100', border: 'border-border' },
 };
 
 export function ApplicationCard({ app }: ApplicationCardProps) {
@@ -29,9 +29,9 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
   // Generate a consistent "avatar" color based on the app name
   const avatarColors = [
     'bg-red-100 text-red-600',
-    'bg-orange-100 text-orange-600',
-    'bg-amber-100 text-amber-600',
-    'bg-yellow-100 text-yellow-600',
+    'bg-primary-light text-primary-text',
+    'bg-secondary-light text-secondary-text',
+    'bg-secondary-light text-secondary-text', // yellow -> secondary
     'bg-lime-100 text-lime-600',
     'bg-green-100 text-green-600',
     'bg-emerald-100 text-emerald-600',
@@ -50,7 +50,7 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
   const avatarColor = avatarColors[colorIndex];
 
   return (
-    <div className="group relative flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+    <div className="group relative flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
         
         {/* Card Body */}
         <div className="p-5 flex-1 flex flex-col gap-4">
@@ -61,10 +61,10 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
                         {app.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                        <h3 className="text-base font-bold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors line-clamp-1" title={app.name}>
+                        <h3 className="text-base font-bold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-1" title={app.name}>
                             {app.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5 text-xs text-foreground/70">
                             <span className="hover:underline cursor-pointer">{app.namespace}</span>
                             <span className="text-gray-300">•</span>
                             <span>{app.project}</span>
@@ -75,14 +75,14 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
 
             {/* Content: Chart Info */}
              <div className="mt-1 flex items-center gap-2">
-                <div className="inline-flex items-center px-2 py-1 rounded-md bg-gray-50 text-xs font-mono text-gray-600 border border-gray-100 truncate max-w-full">
+                <div className="inline-flex items-center px-2 py-1 rounded-md bg-background/80 text-xs font-mono text-foreground/80 border border-border/50 truncate max-w-full">
                     {app.chartName} @ {app.chartRevision}
                 </div>
             </div>
         </div>
 
         {/* Card Footer */}
-        <div className="px-4 py-3 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between text-xs">
+        <div className="px-4 py-3 bg-background/50 border-t border-border/50 flex items-center justify-between text-xs">
             {/* Status Pill */}
              <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-full border", statusInfo.bg, statusInfo.color, statusInfo.border)}>
                  <StatusIcon size={12} className={app.status === 'Progressing' ? 'animate-spin' : ''} />
@@ -90,40 +90,40 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
             </div>
 
             {/* Actions / Links */}
-            <div className="flex items-center gap-3 text-gray-400">
+            <div className="flex items-center gap-3 text-foreground/50">
                 <span className="flex items-center gap-1" title={`Created: ${new Date(app.creationTimestamp).toLocaleDateString()}`}>
                     <Clock size={12} />
                     <span>{new Date(app.creationTimestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                 </span>
 
-                <div className="h-3 w-px bg-gray-200"></div>
+                <div className="h-3 w-px bg-border"></div>
 
                 <div className="flex items-center gap-2">
                     {app.externalURL ? (
-                        <Link href={app.externalURL} target="_blank" className="hover:text-blue-600 transition-colors" title="Airflow">
+                        <Link href={app.externalURL} target="_blank" className="hover:text-primary transition-colors" title="Airflow">
                             <Wind size={14} />
                         </Link>
                     ) : (
-                        <span className="text-gray-300 cursor-not-allowed" title="Airflow not available">
+                        <span className="text-foreground/40 cursor-not-allowed" title="Airflow not available">
                             <Wind size={14} />
                         </span>
                     )}
 
-                    <Link href={grafanaUrl} target="_blank" className="hover:text-orange-600 transition-colors" title="Grafana">
+                    <Link href={grafanaUrl} target="_blank" className="hover:text-primary transition-colors" title="Grafana">
                         <Activity size={14} />
                     </Link>
 
                     {app.fileBrowserUrl ? (
-                        <Link href={app.fileBrowserUrl} target="_blank" className="hover:text-amber-600 transition-colors" title="File Browser">
+                        <Link href={app.fileBrowserUrl} target="_blank" className="hover:text-secondary transition-colors" title="File Browser">
                             <FolderOpen size={14} />
                         </Link>
                     ) : (
-                        <span className="text-gray-300 cursor-not-allowed" title="File Browser not available">
+                        <span className="text-foreground/40 cursor-not-allowed" title="File Browser not available">
                             <FolderOpen size={14} />
                         </span>
                     )}
                     
-                    <Link href={githubUrl} target="_blank" className="hover:text-gray-900 transition-colors" title="GitHub">
+                    <Link href={githubUrl} target="_blank" className="hover:text-foreground transition-colors" title="GitHub">
                          <Github size={14} />
                     </Link>
                 </div>

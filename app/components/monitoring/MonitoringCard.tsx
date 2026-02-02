@@ -17,23 +17,23 @@ function MetricProgress({ current, total, unit, label, icon: Icon, isDynamic = f
   const t = total ?? 0;
   const percentage = t > 0 ? Math.min((c / t) * 100, 100) : 0;
   // Determine color based on usage
-  let color = 'bg-blue-500';
+  let color = 'bg-primary';
   if (percentage > 90) color = 'bg-red-500';
-  else if (percentage > 75) color = 'bg-amber-500';
+  else if (percentage > 75) color = 'bg-secondary';
 
   return (
     <div className="space-y-1">
       <div className="flex justify-between items-center text-xs">
-         <div className="flex items-center gap-1.5 text-gray-600" title={isDynamic ? "Value changes based on selected period" : ""}>
+         <div className="flex items-center gap-1.5 text-foreground/80" title={isDynamic ? "Value changes based on selected period" : ""}>
             <Icon size={12} />
             <span className="font-medium">{label}</span>
-            {isDynamic && <Clock size={12} className="ml-1 text-gray-400" />}
+            {isDynamic && <Clock size={12} className="ml-1 text-foreground/60" />}
          </div>
-         <span className="text-gray-500">
+         <span className="text-foreground/70">
             {current?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} / {total?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} {unit}
          </span>
       </div>
-      <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-1.5 w-full bg-background/80 rounded-full overflow-hidden">
         <div 
             className={cn("h-full rounded-full transition-all", color)} 
             style={{ width: `${percentage}%` }} 
@@ -49,11 +49,11 @@ interface MonitoringCardProps {
 
 export function MonitoringCard({ metric }: MonitoringCardProps) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-all">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-4">
         <div>
-           <h3 className="font-bold text-gray-900 truncate w-48" title={metric.namespace}>{metric.namespace}</h3>
-           <p className="text-xs text-gray-500">Airflow Instance</p>
+           <h3 className="font-bold text-foreground truncate w-48" title={metric.namespace}>{metric.namespace}</h3>
+           <p className="text-xs text-foreground/70">Airflow Instance</p>
         </div>
       </div>
       
@@ -75,23 +75,23 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
             isDynamic={true}
         />
 
-        <div className="pt-2 grid grid-cols-3 gap-3 border-t border-gray-50">
-           <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
-              <span className="text-xs text-gray-500 font-medium">DB Usage</span>
-              <span className="text-xs font-bold text-gray-700">{metric.db_usage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB</span>
+        <div className="pt-2 grid grid-cols-3 gap-3 border-t border-border/50">
+           <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
+              <span className="text-xs text-foreground/70 font-medium">DB Usage</span>
+              <span className="text-xs font-bold text-foreground/90">{metric.db_usage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB</span>
            </div>
 
-           <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
-              <span className="text-xs text-gray-500 font-medium">S3 Usage</span>
-              <span className="text-xs font-bold text-gray-700">{metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
+           <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
+              <span className="text-xs text-foreground/70 font-medium">S3 Usage</span>
+              <span className="text-xs font-bold text-foreground/90">{metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
             </div>
            
-           <div className="flex items-center justify-center gap-3 bg-gray-50 p-2 rounded-lg">
+           <div className="flex items-center justify-center gap-3 bg-background/70 p-2 rounded-lg">
               <div className="flex items-center gap-1 text-green-600" title="Success Runs">
                 <CheckCircle2 size={14} />
                 <span className="text-xs font-bold">{metric.dag_run_success_count ?? 'N/A'}</span>
               </div>
-              <div className="w-px h-3 bg-gray-300"></div>
+              <div className="w-px h-3 bg-border"></div>
               <div className="flex items-center gap-1 text-red-500" title="Failed Runs">
                 <XCircle size={14} />
                 <span className="text-xs font-bold">{metric.dag_run_failure_count ?? 'N/A'}</span>

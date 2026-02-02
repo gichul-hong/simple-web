@@ -40,20 +40,20 @@ export function Navbar() {
   };
 
   return (
-    <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+    <nav className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center gap-4">
             <Link href={createHref('/')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-2 rounded-xl text-white shadow-md shadow-orange-200/50">
+              <div className="bg-gradient-to-br from-primary to-secondary p-2 rounded-xl text-primary-foreground shadow-lg shadow-primary/20">
                   <Cat size={24} strokeWidth={2.5} />
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-amber-600">
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-text to-secondary-text">
                   MeowMeow
               </span>
             </Link>
 
-            <div className="w-px h-6 bg-gray-200" />
+            <div className="w-px h-6 bg-border" />
 
             {showNav && (
               <div className="hidden md:flex items-center gap-1">
@@ -61,8 +61,8 @@ export function Navbar() {
                   href={createHref('/')} 
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/') 
-                      ? 'bg-orange-50 text-orange-700' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-primary-light text-primary-text' 
+                      : 'text-foreground/60 hover:bg-gray-50 hover:text-foreground'
                   }`}
                 >
                   <LayoutDashboard size={18} />
@@ -72,8 +72,8 @@ export function Navbar() {
                   href={createHref('/monitoring')} 
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/monitoring') 
-                      ? 'bg-orange-50 text-orange-700' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-primary-light text-primary-text' 
+                      : 'text-foreground/60 hover:bg-gray-50 hover:text-foreground'
                   }`}
                 >
                   <Activity size={18} />
@@ -82,7 +82,7 @@ export function Navbar() {
               </div>
             )}
             
-            <GlobalSearch />
+            {showNav && <GlobalSearch />}
           </div>
 
           <div className="flex items-center gap-4">
@@ -92,8 +92,8 @@ export function Navbar() {
                     onClick={() => setIsUtilsOpen(!isUtilsOpen)}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors outline-none ${
                         isUtilsActive
-                        ? 'bg-orange-50 text-orange-700' 
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-primary-light text-primary-text' 
+                        : 'text-foreground/60 hover:bg-gray-50 hover:text-foreground'
                     }`}
                 >
                     <Wrench size={18} />
@@ -102,12 +102,12 @@ export function Navbar() {
                 </button>
 
                 {isUtilsOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg ring-1 ring-black/5 p-1 animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-lg ring-1 ring-black/5 p-1 animate-in fade-in slide-in-from-top-2">
                         <Link 
                             href="/utils/jwt" 
                             onClick={() => setIsUtilsOpen(false)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                isActive('/utils/jwt') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                isActive('/utils/jwt') ? 'bg-primary-light text-primary-text' : 'text-foreground/60 hover:bg-gray-50 hover:text-foreground'
                             }`}
                         >
                             <FileCode size={16} />
@@ -117,7 +117,7 @@ export function Navbar() {
                             href="/utils/formatter" 
                             onClick={() => setIsUtilsOpen(false)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                isActive('/utils/formatter') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                isActive('/utils/formatter') ? 'bg-primary-light text-primary-text' : 'text-foreground/60 hover:bg-gray-50 hover:text-foreground'
                             }`}
                         >
                             <FileJson size={16} />
@@ -127,7 +127,7 @@ export function Navbar() {
                             href="/utils/base64" 
                             onClick={() => setIsUtilsOpen(false)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                isActive('/utils/base64') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                isActive('/utils/base64') ? 'bg-primary-light text-primary-text' : 'text-foreground/60 hover:bg-gray-50 hover:text-foreground'
                             }`}
                         >
                             <Binary size={16} />
@@ -137,7 +137,7 @@ export function Navbar() {
                             href="/utils/url-encoding" 
                             onClick={() => setIsUtilsOpen(false)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                isActive('/utils/url-encoding') ? 'bg-orange-50 text-orange-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                isActive('/utils/url-encoding') ? 'bg-primary-light text-primary-text' : 'text-foreground/60 hover:bg-gray-50 hover:text-foreground'
                             }`}
                         >
                             <LinkIcon size={16} />
@@ -153,7 +153,7 @@ export function Navbar() {
                   href={argoCdBaseUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-foreground/60 hover:bg-gray-50 hover:text-foreground transition-colors"
                 >
                   <ExternalLinkIcon size={18} />
                   ArgoCD
@@ -161,28 +161,28 @@ export function Navbar() {
               </div>
             )}
             
-            <div className="w-px h-6 bg-gray-200" />
+            <div className="w-px h-6 bg-border" />
 
              {session ? (
                  <div className="flex items-center gap-4">
                      <div className="text-sm text-right hidden sm:block">
-                         <p className="font-medium text-gray-900">{session.user?.name}</p>
-                         <p className="text-xs text-gray-500">{session.user?.email}</p>
+                         <p className="font-medium text-foreground">{session.user?.name}</p>
+                         <p className="text-xs text-foreground/60">{session.user?.email}</p>
                      </div>
                      {session.user?.image ? (
                        <img 
                           src={session.user.image} 
                           alt="Profile" 
-                          className="w-8 h-8 rounded-full border border-gray-200"
+                          className="w-8 h-8 rounded-full border border-border"
                        />
                      ) : (
-                       <div className="w-8 h-8 rounded-full bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700 font-bold text-xs">
+                       <div className="w-8 h-8 rounded-full bg-primary-light border border-primary/20 flex items-center justify-center text-primary-text font-bold text-xs">
                           {session.user?.name?.charAt(0) || 'U'}
                        </div>
                      )}
                      <button 
                         onClick={() => signOut()}
-                        className="text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
+                        className="text-sm font-medium text-foreground/60 hover:text-red-600 transition-colors"
                      >
                          Sign Out
                      </button>
@@ -191,7 +191,7 @@ export function Navbar() {
                  authEnabled ? (
                     <button 
                         onClick={() => signIn('keycloak')}
-                        className="text-sm font-medium text-gray-600 hover:text-orange-600 transition-colors"
+                        className="text-sm font-medium text-foreground/60 hover:text-primary transition-colors"
                     >
                         Sign In with Keycloak
                     </button>

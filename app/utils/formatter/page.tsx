@@ -114,7 +114,7 @@ export default function FormatterPage() {
 
   // Simple Syntax Highlighter Component
   const SyntaxHighlighter = ({ code, type }: { code: string; type: FormatType }) => {
-    if (!code) return <span className="text-gray-400 italic">Result will appear here...</span>;
+    if (!code) return <span className="text-foreground/60 italic">Result will appear here...</span>;
 
     const lines = code.split('\n');
 
@@ -130,14 +130,14 @@ export default function FormatterPage() {
                   if (part.startsWith('"') && part.endsWith('"')) {
                     // Check if it's a key or value
                     const isKey = line.trim().startsWith(part) && line.includes(':');
-                    return <span key={j} className={isKey ? "text-blue-600 font-semibold" : "text-green-600"}>{part}</span>;
+                    return <span key={j} className={isKey ? "text-primary-text font-semibold" : "text-green-600"}>{part}</span>;
                   }
                   if (part === ':' || part === ',' || part === '{' || part === '}' || part === '[' || part === ']') {
-                    return <span key={j} className="text-gray-500">{part}</span>;
+                    return <span key={j} className="text-foreground/70">{part}</span>;
                   }
                   if (part.match(/true|false|null/)) return <span key={j} className="text-purple-600 font-bold">{part}</span>;
-                  if (part.match(/^-?\d+(\.\d+)?$/)) return <span key={j} className="text-orange-600">{part}</span>;
-                  return <span key={j} className="text-gray-800">{part}</span>;
+                  if (part.match(/^-?\d+(\.\d+)?$/)) return <span key={j} className="text-secondary-text">{part}</span>;
+                  return <span key={j} className="text-foreground">{part}</span>;
                 })}
               </div>
             );
@@ -148,18 +148,18 @@ export default function FormatterPage() {
                 return (
                     <div key={i} className="whitespace-pre">
                         <span>{keyMatch[1]}</span>
-                        <span className="text-blue-700 font-semibold">{keyMatch[2]}:</span>
+                        <span className="text-primary-text font-semibold">{keyMatch[2]}:</span>
                         <span className="text-green-700">{keyMatch[3]}</span>
                     </div>
                 )
             }
              // Comment
              if (line.trim().startsWith('#')) {
-                return <div key={i} className="whitespace-pre text-gray-400 italic">{line}</div>;
+                return <div key={i} className="whitespace-pre text-foreground/60 italic">{line}</div>;
              }
-             return <div key={i} className="whitespace-pre text-gray-800">{line}</div>;
+             return <div key={i} className="whitespace-pre text-foreground">{line}</div>;
           }
-          return <div key={i} className="whitespace-pre text-gray-800">{line}</div>;
+          return <div key={i} className="whitespace-pre text-foreground">{line}</div>;
         })}
       </div>
     );
@@ -168,8 +168,8 @@ export default function FormatterPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Format & Validator</h1>
-        <p className="mt-2 text-lg text-gray-600">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Format & Validator</h1>
+        <p className="mt-2 text-lg text-foreground/80">
           Auto-detects JSON/YAML, formats code, and highlights syntax.
         </p>
       </div>
@@ -178,13 +178,13 @@ export default function FormatterPage() {
         {/* Input */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <FileText size={20} className="text-gray-500" />
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <FileText size={20} className="text-foreground/70" />
               Input
             </h2>
             <button
               onClick={handleClear}
-              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-2 text-foreground/70 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               title="Clear"
             >
               <Trash2 size={18} />
@@ -195,7 +195,7 @@ export default function FormatterPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Paste JSON or YAML here..."
-              className="w-full h-[600px] p-4 font-mono text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none shadow-sm transition-shadow text-gray-700 leading-relaxed"
+              className="w-full h-[600px] p-4 font-mono text-sm bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none shadow-sm transition-shadow text-foreground/90 leading-relaxed"
               spellCheck={false}
             />
              {error && (
@@ -211,12 +211,12 @@ export default function FormatterPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-                <h2 className="text-xl font-semibold text-gray-800">Result</h2>
+                <h2 className="text-xl font-semibold text-foreground">Result</h2>
                 {/* Type Badge */}
                 {detectedType !== 'unknown' && (
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border uppercase tracking-wide
-                        ${detectedType === 'json' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
-                        ${detectedType === 'yaml' ? 'bg-orange-50 text-orange-700 border-orange-200' : ''}
+                        ${detectedType === 'json' ? 'bg-primary-light text-primary-text border-primary' : ''}
+                        ${detectedType === 'yaml' ? 'bg-secondary-light text-secondary-text border-secondary' : ''}
                     `}>
                         {detectedType === 'json' ? <FileJson size={12} /> : <Code size={12} />}
                         {detectedType}
@@ -226,18 +226,18 @@ export default function FormatterPage() {
             <button
               onClick={handleCopy}
               disabled={!output}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground/80 bg-card border-border rounded-lg hover:bg-background/80 hover:text-foreground transition-colors disabled:opacity-50"
             >
               {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
 
-          <div className="h-[600px] bg-white border border-gray-200 rounded-xl shadow-sm overflow-auto p-4 relative">
+          <div className="h-[600px] bg-card border-border rounded-xl shadow-sm overflow-auto p-4 relative">
              <SyntaxHighlighter code={output || (error ? input : '')} type={detectedType} />
              
              {!output && !input && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-foreground/60">
                     <Wand2 size={48} className="mb-4 opacity-20" />
                     <p>Paste text to format</p>
                 </div>

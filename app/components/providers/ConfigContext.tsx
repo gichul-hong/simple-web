@@ -43,10 +43,10 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-        <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="flex h-screen items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-                <p className="text-gray-500 font-medium animate-pulse">Loading Configuration...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <p className="text-foreground/70 font-medium animate-pulse">Loading Configuration...</p>
             </div>
         </div>
     );
@@ -56,7 +56,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   // For now, if config is null (error case), we render nothing or a generic error.
   if (!config) {
       return (
-        <div className="flex h-screen items-center justify-center bg-gray-50 text-red-600">
+        <div className="flex h-screen items-center justify-center bg-background text-red-600">
             Failed to load application configuration.
         </div>
       );

@@ -21,15 +21,17 @@ export const metadata: Metadata = {
   description: "Manage your applications via ArgoCD",
 };
 
+const appTheme = process.env.APP_THEME || 'orange';
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} theme-${appTheme}`}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
+        className={`antialiased bg-background text-foreground min-h-screen`}
       >
         <Providers>
           <Navbar />

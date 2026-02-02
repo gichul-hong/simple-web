@@ -13,9 +13,9 @@ const statusConfig = {
   Healthy: { color: 'text-green-500', icon: CheckCircle, bg: 'bg-green-50 border-green-200' },
   Progressing: { color: 'text-blue-500', icon: Loader2, bg: 'bg-blue-50 border-blue-200' },
   Degraded: { color: 'text-red-500', icon: AlertCircle, bg: 'bg-red-50 border-red-200' },
-  Suspended: { color: 'text-gray-500', icon: Box, bg: 'bg-gray-50 border-gray-200' },
-  Missing: { color: 'text-orange-500', icon: XCircle, bg: 'bg-orange-50 border-orange-200' },
-  Unknown: { color: 'text-gray-400', icon: HelpCircle, bg: 'bg-gray-50 border-gray-200' },
+  Suspended: { color: 'text-foreground/70', icon: Box, bg: 'bg-gray-50 border-border' },
+  Missing: { color: 'text-primary', icon: XCircle, bg: 'bg-primary-light border-primary' },
+  Unknown: { color: 'text-foreground/60', icon: HelpCircle, bg: 'bg-gray-50 border-border' },
 };
 
 export function ApplicationRow({ app }: ApplicationRowProps) {
@@ -27,12 +27,12 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
   const grafanaUrl = `${grafanaBaseUrl}?project_name=${app.namespace}`;
 
   return (
-    <tr className="group hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-0">
+    <tr className="group hover:bg-background/50 transition-colors border-b border-border last:border-0">
       <td className="py-4 pl-4 pr-3 sm:pl-6">
         <div className="flex items-center gap-3">
           <div>
-            <div className="font-semibold text-gray-900">{app.name}</div>
-            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+            <div className="font-semibold text-foreground">{app.name}</div>
+            <div className="text-xs text-foreground/70 flex items-center gap-1 mt-0.5">
                <Box size={12} />
                {app.namespace}
             </div>
@@ -45,18 +45,18 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
             {app.status}
         </div>
       </td>
-      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
+      <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/80">
         {app.project}
       </td>
       <td className="px-3 py-4 whitespace-nowrap">
          <div className="flex flex-col">
-            <span className="text-sm text-gray-900" title={app.chartName}>{app.chartName}</span>
-            <span className="text-xs text-gray-500 font-mono">{app.chartRevision}</span>
+            <span className="text-sm text-foreground" title={app.chartName}>{app.chartName}</span>
+            <span className="text-xs text-foreground/70 font-mono">{app.chartRevision}</span>
          </div>
       </td>
-      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/70">
           <div className="flex items-center gap-1.5">
-             <Clock size={14} className="text-gray-400" />
+             <Clock size={14} className="text-foreground/60" />
              {new Date(app.creationTimestamp).toLocaleDateString()}
           </div>
       </td>
@@ -67,14 +67,14 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
                 <Link 
                     href={app.externalURL} 
                     target="_blank" 
-                    className="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 transition-colors"
+                    className="p-1.5 rounded-md text-primary hover:bg-primary-light transition-colors"
                     title="Open Airflow"
                 >
                     <Wind size={16} />
                 </Link>
             ) : (
                 <span 
-                    className="p-1.5 rounded-md text-gray-300 cursor-not-allowed"
+                    className="p-1.5 rounded-md text-foreground/40 cursor-not-allowed"
                     title="Airflow not available"
                 >
                     <Wind size={16} />
@@ -85,7 +85,7 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
             <Link 
                 href={grafanaUrl}
                 target="_blank"
-                className="p-1.5 rounded-md text-orange-600 hover:bg-orange-50 transition-colors"
+                className="p-1.5 rounded-md text-primary-text hover:bg-primary-light transition-colors"
                 title="Open Grafana"
             >
                 <Activity size={16} />
@@ -96,14 +96,14 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
                 <Link 
                     href={app.fileBrowserUrl}
                     target="_blank"
-                    className="p-1.5 rounded-md text-amber-600 hover:bg-amber-50 transition-colors"
+                    className="p-1.5 rounded-md text-secondary-text hover:bg-secondary-light transition-colors"
                     title="File Browser"
                 >
                     <FolderOpen size={16} />
                 </Link>
             ) : (
                 <span
-                    className="p-1.5 rounded-md text-gray-300 cursor-not-allowed"
+                    className="p-1.5 rounded-md text-foreground/40 cursor-not-allowed"
                     title="File Browser not available"
                 >
                     <FolderOpen size={16} />
@@ -114,7 +114,7 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
             <Link 
                 href={githubUrl}
                 target="_blank"
-                className="p-1.5 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-md text-foreground/80 hover:bg-gray-100 transition-colors"
                 title="GitHub Repo"
             >
                 <Github size={16} />

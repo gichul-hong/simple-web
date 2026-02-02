@@ -109,11 +109,11 @@ export default function UrlEncodingPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
-          <Link className="text-orange-600" />
+        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <Link className="text-primary" />
           URL Encoder / Decoder
         </h1>
-        <p className="text-lg text-gray-600">
+        <p className="text-lg text-foreground/80">
           Encode and decode text for safe use in URLs.
         </p>
       </div>
@@ -122,7 +122,7 @@ export default function UrlEncodingPage() {
         {/* Input Section */}
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-foreground/90">
                     {mode === 'encode' ? 'Text Input' : 'URL-encoded Input'}
                 </label>
                 <div className="flex items-center gap-2">
@@ -139,27 +139,27 @@ export default function UrlEncodingPage() {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={mode === 'encode' ? "Type text to encode..." : "Paste URL-encoded string here..."}
-                className="w-full h-80 p-4 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none font-mono text-sm resize-none bg-white shadow-sm"
+                className="w-full h-80 p-4 rounded-xl border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono text-sm resize-none bg-card shadow-sm"
                 spellCheck={false}
             />
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border">
                  <div className="flex items-center gap-4">
-                     <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                     <label className="flex items-center gap-2 text-sm text-foreground/90 cursor-pointer select-none">
                          <input 
                             type="checkbox" 
                             checked={mode === 'encode'} 
                             onChange={() => setMode('encode')}
-                            className="text-orange-600 focus:ring-orange-500 rounded"
+                            className="text-primary focus:ring-primary rounded"
                          />
                          Encode
                      </label>
-                     <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                     <label className="flex items-center gap-2 text-sm text-foreground/90 cursor-pointer select-none">
                          <input 
                             type="checkbox" 
                             checked={mode === 'decode'} 
                             onChange={() => setMode('decode')}
-                            className="text-orange-600 focus:ring-orange-500 rounded"
+                            className="text-primary focus:ring-primary rounded"
                          />
                          Decode
                      </label>
@@ -170,12 +170,12 @@ export default function UrlEncodingPage() {
         {/* Output Section */}
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                 <label className="text-sm font-medium text-gray-700">
+                 <label className="text-sm font-medium text-foreground/90">
                     {mode === 'encode' ? 'URL-encoded Output' : 'Text Output'}
                 </label>
                 <button 
                     onClick={swap}
-                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                    className="text-xs text-primary-text hover:text-primary/90 flex items-center gap-1 px-2 py-1 rounded hover:bg-primary-light transition-colors"
                     title="Use output as input"
                 >
                     <ArrowRightLeft size={14} /> Swap
@@ -190,14 +190,14 @@ export default function UrlEncodingPage() {
                     className={`w-full h-80 p-4 rounded-xl border focus:ring-1 outline-none font-mono text-sm resize-none shadow-sm ${ 
                         error 
                         ? 'border-red-300 bg-red-50 text-red-900 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-200 bg-gray-50 text-gray-800 focus:border-orange-500 focus:ring-orange-500'
+                        : 'border-border bg-background/70 text-foreground/90 focus:border-primary focus:ring-primary'
                     }`}
                 />
                 
                 {outputText && !error && (
                     <button
                         onClick={handleCopy}
-                        className="absolute top-3 right-3 p-2 rounded-lg bg-white/80 backdrop-blur border border-gray-200 shadow-sm hover:bg-gray-100 transition-colors text-gray-600"
+                        className="absolute top-3 right-3 p-2 rounded-lg bg-card/80 backdrop-blur border border-border shadow-sm hover:bg-background/80 transition-colors text-foreground/80"
                         title="Copy to clipboard"
                     >
                         {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
@@ -212,7 +212,7 @@ export default function UrlEncodingPage() {
                 </div>
             )}
             
-            <div className="text-xs text-gray-400 text-right">
+            <div className="text-xs text-foreground/60 text-right">
                 Length: {outputText.length} chars
             </div>
         </div>
