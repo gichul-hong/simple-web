@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AirflowInstanceMetric } from '@/types/monitoring';
 import { MonitoringCard } from './MonitoringCard';
 import { MonitoringRow } from './MonitoringRow';
-import { Search, RefreshCw, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown, Clock } from 'lucide-react';
+import { RefreshCw, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDown, Clock } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useConfig } from '../providers/ConfigContext';
 import { cn } from '@/app/lib/utils';
@@ -16,9 +17,10 @@ export function MonitoringList() {
   const [allMetrics, setAllMetrics] = useState<AirflowInstanceMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const { authEnabled } = useConfig();
+  const searchParams = useSearchParams();
+  const query = searchParams.get('q') || '';
   
   // New state for period
   const [period, setPeriod] = useState<number>(1);
@@ -65,12 +67,12 @@ export function MonitoringList() {
 
   // Client-side filtering
   const filteredMetrics = useMemo(() => {
-    if (!filter) return allMetrics;
-    const lowerFilter = filter.toLowerCase();
+    if (!query) return allMetrics;
+    const lowerCaseQuery = query.toLowerCase();
     return allMetrics.filter(metric => 
-      metric.namespace.toLowerCase().includes(lowerFilter)
+      metric.namespace.toLowerCase().includes(lowerCaseQuery)
     );
-  }, [allMetrics, filter]);
+  }, [allMetrics, query]);
 
   // Client-side sorting
   const sortedMetrics = useMemo(() => {
@@ -130,17 +132,7 @@ export function MonitoringList() {
   return (
     <div className="space-y-6">
        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex items-center gap-4">
-            <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                    type="text" 
-                    placeholder="Search by namespace..." 
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                />
-            </div>
+        <div className="flex items-center gap-4 flex-1">
             <div className="flex items-center p-1 bg-gray-100 rounded-lg border border-gray-200">
                 {[1, 7, 30].map(p => (
                     <button
@@ -200,7 +192,11 @@ export function MonitoringList() {
         )
       ) : (
         <>
-        {viewMode === 'grid' ? (
+        {sortedMetrics.length === 0 ? (
+            <div className="py-12 text-center text-gray-500">
+                No metrics found matching your search.
+            </div>
+        ) : viewMode === 'grid' ? (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {sortedMetrics.map((metric) => (
                     <MonitoringCard key={metric.namespace} metric={metric} />
@@ -234,4 +230,3 @@ export function MonitoringList() {
     </div>
   );
 }
-

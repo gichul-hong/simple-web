@@ -6,6 +6,7 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useConfig } from '../providers/ConfigContext';
+import GlobalSearch from './GlobalSearch';
 
 export function Navbar() {
   const { data: session } = useSession();
@@ -144,6 +145,10 @@ export function Navbar() {
                 </a>
               </div>
             )}
+          </div>
+          
+          <div className="flex-1 flex justify-center px-8">
+            <GlobalSearch />
           </div>
 
           <div className="flex items-center gap-4">

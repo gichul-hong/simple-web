@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Application, PaginatedResponse } from '@/types/application';
 import { ApplicationCard } from './ApplicationCard';
 import { ApplicationRow } from './ApplicationRow';
-import { LayoutGrid, List as ListIcon, Search, RefreshCw, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { LayoutGrid, List as ListIcon, RefreshCw, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useConfig } from '../providers/ConfigContext';
 
@@ -15,9 +16,10 @@ export function ApplicationList() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const { authEnabled } = useConfig();
+  const searchParams = useSearchParams();
+  const query = searchParams.get('q') || '';
   
   // Sorting State
   const [sortColumn, setSortColumn] = useState<SortColumn>('name');
@@ -65,21 +67,25 @@ export function ApplicationList() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authEnabled]);
 
-  // Debounce search and handle limit change
+  // Fetch data when query, page, sort, or limit changes
   useEffect(() => {
-    const timer = setTimeout(() => {
-        fetchApplications(1, filter, itemsPerPage, sortColumn, sortDirection);
-    }, 500);
+    fetchApplications(currentPage, query, itemsPerPage, sortColumn, sortDirection);
+  }, [query, currentPage, itemsPerPage, sortColumn, sortDirection, fetchApplications]);
 
-    return () => clearTimeout(timer);
-  }, [filter, itemsPerPage, sortColumn, sortDirection, fetchApplications]);
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    if (currentPage !== 1) {
+        setCurrentPage(1);
+    }
+    // We don't want to trigger a fetch here, the main effect will do that.
+    // This is just for resetting the page number.
+  }, [query]);
 
-  // Handle page change
   const handlePageChange = (newPage: number) => {
       if (newPage >= 1 && newPage <= totalPages) {
-          fetchApplications(newPage, filter, itemsPerPage, sortColumn, sortDirection);
+          setCurrentPage(newPage);
       }
   };
 
@@ -115,15 +121,8 @@ export function ApplicationList() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input 
-                type="text" 
-                placeholder="Search applications..." 
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-            />
+        <div className="flex-1">
+            {/* The global search bar in the navbar now controls searching */}
         </div>
         <div className="flex items-center gap-2">
             <div className="flex items-center p-1 bg-gray-100 rounded-lg border border-gray-200">
@@ -143,7 +142,7 @@ export function ApplicationList() {
                 </button>
             </div>
             <button 
-                onClick={() => fetchApplications(currentPage, filter, itemsPerPage, sortColumn, sortDirection)} 
+                onClick={() => fetchApplications(currentPage, query, itemsPerPage, sortColumn, sortDirection)} 
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
             >
