@@ -60,16 +60,16 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
       <div className="space-y-4">
         <MetricProgress 
             label="Requested Memory" 
-            current={metric.request_memory_used} 
-            total={metric.request_memory_quota} 
+            current={metric.requestMemoryUsed} 
+            total={metric.requestMemoryQuota} 
             unit="GB" 
             icon={HardDrive} 
             isDynamic={true}
         />
         <MetricProgress 
             label="Limited Memory" 
-            current={metric.limit_memory_used} 
-            total={metric.limit_memory_quota} 
+            current={metric.limitMemoryUsed} 
+            total={metric.limitMemoryQuota} 
             unit="GB" 
             icon={HardDrive} 
             isDynamic={true}
@@ -78,7 +78,7 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
         <div className="pt-2 grid grid-cols-3 gap-3 border-t border-border/50">
            <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
               <span className="text-xs text-foreground/70 font-medium">DB Usage</span>
-              <span className="text-xs font-bold text-foreground/90">{metric.db_usage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB</span>
+              <span className="text-xs font-bold text-foreground/90">{metric.dbUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB</span>
            </div>
 
            <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
@@ -89,12 +89,12 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
            <div className="flex items-center justify-center gap-3 bg-background/70 p-2 rounded-lg">
               <div className="flex items-center gap-1 text-green-600" title="Success Runs">
                 <CheckCircle2 size={14} />
-                <span className="text-xs font-bold">{metric.dag_run_success_count ?? 'N/A'}</span>
+                <span className="text-xs font-bold">{metric.dagRunSuccessCount ?? 'N/A'}</span>
               </div>
               <div className="w-px h-3 bg-border"></div>
               <div className="flex items-center gap-1 text-red-500" title="Failed Runs">
                 <XCircle size={14} />
-                <span className="text-xs font-bold">{metric.dag_run_failure_count ?? 'N/A'}</span>
+                <span className="text-xs font-bold">{metric.dagRunFailureCount ?? 'N/A'}</span>
               </div>
            </div>
         </div>

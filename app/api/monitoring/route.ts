@@ -2,19 +2,37 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { AirflowInstanceMetric } from '@/types/monitoring';
 
+// Helper function to convert snake_case keys to camelCase
+function snakeToCamel(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(v => snakeToCamel(v));
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.keys(obj).reduce((acc, key) => {
+      const camelKey = key.replace(/([-_][a-z])/ig, ($1) => {
+        return $1.toUpperCase()
+          .replace('-', '')
+          .replace('_', '');
+      });
+      acc[camelKey] = snakeToCamel(obj[key]);
+      return acc;
+    }, {} as any);
+  }
+  return obj;
+}
+
 export const dynamic = 'force-dynamic';
 
 // Function to generate dummy Airflow metrics
 function generateDummyAirflowMetrics(): AirflowInstanceMetric[] {
   return Array.from({ length: 5 }, (_, i) => ({
     namespace: `airflow-dummy-${i + 1}`,
-    dag_run_success_count: Math.floor(Math.random() * 200),
-    dag_run_failure_count: Math.floor(Math.random() * 10),
-    db_usage: parseFloat((Math.random() * 1024).toFixed(2)),
-    request_memory_used: parseFloat((Math.random() * 8).toFixed(2)),
-    request_memory_quota: 8,
-    limit_memory_used: parseFloat((Math.random() * 16).toFixed(2)),
-    limit_memory_quota: 16,
+    dagRunSuccessCount: Math.floor(Math.random() * 200),
+    dagRunFailureCount: Math.floor(Math.random() * 10),
+    dbUsage: parseFloat((Math.random() * 1024).toFixed(2)),
+    requestMemoryUsed: parseFloat((Math.random() * 8).toFixed(2)),
+    requestMemoryQuota: 8,
+    limitMemoryUsed: parseFloat((Math.random() * 16).toFixed(2)),
+    limitMemoryQuota: 16,
     s3BucketUsage: parseFloat((Math.random() * 200).toFixed(2)), // Add dummy S3 usage
   }));
 }
@@ -66,10 +84,10 @@ export async function GET(request: NextRequest) {
     const metrics: AirflowInstanceMetric[] = text
       .split('\n')
       .filter(line => line.trim() !== '')
-      .map(line => JSON.parse(line));
-
-    return NextResponse.json({ data: metrics });
-  } catch (error) {
+                  .map(line => JSON.parse(line));
+      
+              const camelCaseMetrics: AirflowInstanceMetric[] = snakeToCamel(metrics);
+              return NextResponse.json({ data: camelCaseMetrics });  } catch (error) {
     console.error("Error fetching Airflow instance metrics:", error);
     // Fallback to dummy data on any other error
     return NextResponse.json({ data: generateDummyAirflowMetrics() });

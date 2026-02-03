@@ -2,13 +2,13 @@ import { Application } from './application';
 
 export interface AirflowInstanceMetric {
   namespace: string;
-  dag_run_success_count: number;
-  dag_run_failure_count: number;
-  db_usage: number; // Float
-  request_memory_used: number; // Float
-  request_memory_quota: number; // Float
-  limit_memory_used: number; // Float
-  limit_memory_quota: number; // Float
+  dagRunSuccessCount: number;
+  dagRunFailureCount: number;
+  dbUsage: number; // Float
+  requestMemoryUsed: number; // Float
+  requestMemoryQuota: number; // Float
+  limitMemoryUsed: number; // Float
+  limitMemoryQuota: number; // Float
   s3BucketUsage?: number; // GB
 }
 

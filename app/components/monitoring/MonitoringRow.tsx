@@ -20,9 +20,9 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
       {/* Dag O/X */}
       <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/80">
         <div className="flex items-center gap-1.5">
-          <span className="text-green-600 font-bold">{metric.dag_run_success_count ?? 'N/A'}</span>
+          <span className="text-green-600 font-bold">{metric.dagRunSuccessCount ?? 'N/A'}</span>
           <span>/</span>
-          <span className="text-red-500 font-bold">{metric.dag_run_failure_count ?? 'N/A'}</span>
+          <span className="text-red-500 font-bold">{metric.dagRunFailureCount ?? 'N/A'}</span>
         </div>
       </td>
 
@@ -38,7 +38,7 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
       <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/80">
         <div className="flex items-center gap-1.5">
             <Database size={14} className="text-foreground/60" />
-            {metric.db_usage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB
+            {metric.dbUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB
         </div>
       </td>
 
@@ -46,7 +46,7 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
       <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/80">
         <div className="flex items-center gap-1.5">
             <HardDrive size={14} className="text-foreground/60" />
-            {(metric.request_memory_used?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} / {(metric.request_memory_quota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} GB
+            {(metric.requestMemoryUsed?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} / {(metric.requestMemoryQuota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} GB
         </div>
       </td>
       
@@ -54,7 +54,7 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
       <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/80">
         <div className="flex items-center gap-1.5">
             <HardDrive size={14} className="text-foreground/60" />
-            {(metric.limit_memory_used?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} / {(metric.limit_memory_quota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} GB
+            {(metric.limitMemoryUsed?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} / {(metric.limitMemoryQuota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A')} GB
         </div>
       </td>
     </tr>
