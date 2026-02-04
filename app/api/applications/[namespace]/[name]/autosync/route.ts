@@ -5,8 +5,10 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { namespace: string; name: string } }
 ) {
-  const { namespace, name } = params;
+  // The `namespace` from params is no longer used in the URL, but `name` is.
+  const { name } = params;
   const backendApiUrl = process.env.BACKEND_API_URL;
+  const argoCdProjectName = process.env.ARGOCD_PROJECT_NAME || 'default';
   const authEnabled = process.env.AUTH_ENABLED === 'true';
 
   if (!backendApiUrl) {
@@ -18,7 +20,7 @@ export async function PUT(
 
   // In dev mode, simulate success without calling backend
   if (!authEnabled) {
-    console.log(`[DEV MODE] Simulated autosync toggle for ${namespace}/${name}.`);
+    console.log(`[DEV MODE] Simulated autosync toggle for ${argoCdProjectName}/${name}.`);
     return NextResponse.json({ success: true, message: "Autosync toggled in dev mode." });
   }
 
@@ -33,7 +35,7 @@ export async function PUT(
     const body = await request.json();
     const { autoSync } = body; // Expecting { "autoSync": true/false }
 
-    const targetUrl = `${backendApiUrl}/api/v1/airflow/${namespace}/application/${name}/autosync`;
+    const targetUrl = `${backendApiUrl}/api/v1/argocd/${argoCdProjectName}/application/${name}/autosync`;
 
     console.log(`Proxying autosync request to: ${targetUrl}`);
 
