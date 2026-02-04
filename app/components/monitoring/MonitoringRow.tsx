@@ -1,13 +1,14 @@
 import React from 'react';
 import { AirflowInstanceMetric } from '@/types/monitoring';
 import { cn } from '@/app/lib/utils';
-import { Database, HardDrive, CheckCircle2, XCircle } from 'lucide-react';
+import { Database, HardDrive, CheckCircle2, XCircle, Settings } from 'lucide-react';
 
 interface MonitoringRowProps {
   metric: AirflowInstanceMetric;
+  onOpenLifecycleModal: (namespace: string) => void;
 }
 
-export function MonitoringRow({ metric }: MonitoringRowProps) {
+export function MonitoringRow({ metric, onOpenLifecycleModal }: MonitoringRowProps) {
   return (
     <tr className="hover:bg-background/50 transition-colors border-b border-border last:border-0">
       <td className="py-4 pl-4 pr-3 sm:pl-6">
@@ -35,6 +36,13 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
               <span className="text-foreground/60"> / {metric.s3BucketQuota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
             </div>
         </div>
+      </td>
+      
+      {/* Lifecycle Actions */}
+      <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/80">
+        <button onClick={() => onOpenLifecycleModal(metric.namespace)} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-primary transition-colors" title="Edit Lifecycle">
+          <Settings size={16} />
+        </button>
       </td>
 
       {/* DB Usage */}

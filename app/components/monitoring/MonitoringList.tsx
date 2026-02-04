@@ -9,6 +9,7 @@ import { RefreshCw, LayoutGrid, List as ListIcon, ArrowUpDown, ArrowUp, ArrowDow
 import { signIn } from 'next-auth/react';
 import { useConfig } from '../providers/ConfigContext';
 import { cn } from '@/app/lib/utils';
+import { LifecycleConfigModal } from './LifecycleConfigModal';
 
 type SortDirection = 'asc' | 'desc';
 type SortColumn = keyof AirflowInstanceMetric;
@@ -22,12 +23,11 @@ export function MonitoringList() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   
-  // New state for period
   const [period, setPeriod] = useState<number>(1);
-
-  // Sorting
   const [sortColumn, setSortColumn] = useState<SortColumn>('namespace');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [lifecycleModalNs, setLifecycleModalNs] = useState<string | null>(null);
+
 
   const fetchMonitoringData = useCallback(async (currentPeriod: number) => {
     setLoading(true);
@@ -45,7 +45,6 @@ export function MonitoringList() {
       const responseData = await response.json();
       let extractedData = responseData.data;
 
-      // Handle nested array if present
       if (Array.isArray(extractedData) && extractedData.length > 0 && Array.isArray(extractedData[0])) {
         extractedData = extractedData[0];
       }
@@ -65,7 +64,6 @@ export function MonitoringList() {
     return () => clearInterval(interval);
   }, [fetchMonitoringData, period]);
 
-  // Client-side filtering
   const filteredMetrics = useMemo(() => {
     if (!query) return allMetrics;
     const lowerCaseQuery = query.toLowerCase();
@@ -74,7 +72,6 @@ export function MonitoringList() {
     );
   }, [allMetrics, query]);
 
-  // Client-side sorting
   const sortedMetrics = useMemo(() => {
     const sortableMetrics = [...filteredMetrics];
     if (!sortColumn) return sortableMetrics;
@@ -211,6 +208,7 @@ export function MonitoringList() {
                                 <SortableHeader column="namespace" label="Namespace" className="pl-4 sm:pl-6" />
                                 <SortableHeader column="dagRunSuccessCount" label="DAG O/X" />
                                 <SortableHeader column="s3BucketUsage" label="S3 Usage" />
+                                <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lifecycle</th>
                                 <SortableHeader column="dbUsage" label="DB Usage" />
                                 <SortableHeader column="requestMemoryUsed" label="Req Mem Used" isDynamic={true} />
                                 <SortableHeader column="limitMemoryUsed" label="Limit Mem Used" isDynamic={true} />
@@ -218,7 +216,7 @@ export function MonitoringList() {
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
                             {sortedMetrics.map((metric) => (
-                                <MonitoringRow key={metric.namespace} metric={metric} />
+                                <MonitoringRow key={metric.namespace} metric={metric} onOpenLifecycleModal={setLifecycleModalNs} />
                             ))}
                         </tbody>
                     </table>
@@ -227,6 +225,12 @@ export function MonitoringList() {
         )}
         </>
       )}
+
+      <LifecycleConfigModal
+        isOpen={!!lifecycleModalNs}
+        onClose={() => setLifecycleModalNs(null)}
+        namespace={lifecycleModalNs || ''}
+      />
     </div>
   );
 }

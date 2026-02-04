@@ -85,10 +85,10 @@ export async function GET(request: NextRequest) {
     const metrics: AirflowInstanceMetric[] = text
       .split('\n')
       .filter(line => line.trim() !== '')
-                  .map(line => JSON.parse(line));
-      
-              const camelCaseMetrics: AirflowInstanceMetric[] = snakeToCamel(metrics);
-              return NextResponse.json({ data: camelCaseMetrics });  } catch (error) {
+      .map(line => snakeToCamel(JSON.parse(line)));
+
+    return NextResponse.json({ data: metrics });
+  } catch (error) {
     console.error("Error fetching Airflow instance metrics:", error);
     // Fallback to dummy data on any other error
     return NextResponse.json({ data: generateDummyAirflowMetrics() });

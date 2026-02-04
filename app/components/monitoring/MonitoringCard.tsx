@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AirflowInstanceMetric } from '@/types/monitoring';
 import { cn } from '@/app/lib/utils';
-import { Database, HardDrive, CheckCircle2, XCircle, Info, Clock } from 'lucide-react'; // Added Info icon for generic info
+import { Database, HardDrive, CheckCircle2, XCircle, Info, Clock, Settings } from 'lucide-react';
+import { LifecycleConfigModal } from './LifecycleConfigModal';
 
 interface MetricProgressProps {
   current: number;
@@ -48,60 +49,74 @@ interface MonitoringCardProps {
 }
 
 export function MonitoringCard({ metric }: MonitoringCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm hover:shadow-md transition-all">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-           <h3 className="font-bold text-foreground truncate w-48" title={metric.namespace}>{metric.namespace}</h3>
-           <p className="text-xs text-foreground/70">Airflow Instance</p>
+    <>
+      <div className="rounded-xl border border-border bg-card p-5 shadow-sm hover:shadow-md transition-all">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+             <h3 className="font-bold text-foreground truncate w-48" title={metric.namespace}>{metric.namespace}</h3>
+             <p className="text-xs text-foreground/70">Airflow Instance</p>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <MetricProgress 
+              label="Requested Memory" 
+              current={metric.requestMemoryUsed} 
+              total={metric.requestMemoryQuota} 
+              unit="GB" 
+              icon={HardDrive} 
+              isDynamic={true}
+          />
+          <MetricProgress 
+              label="Limited Memory" 
+              current={metric.limitMemoryUsed} 
+              total={metric.limitMemoryQuota} 
+              unit="GB" 
+              icon={HardDrive} 
+              isDynamic={true}
+          />
+
+          <div className="pt-2 grid grid-cols-3 gap-3 border-t border-border/50">
+             <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
+                <span className="text-xs text-foreground/70 font-medium">DB Usage</span>
+                <span className="text-xs font-bold text-foreground/90">{metric.dbUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB</span>
+             </div>
+
+             <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-foreground/70 font-medium">S3 Usage</span>
+                  <button onClick={() => setIsModalOpen(true)} className="text-gray-400 hover:text-primary transition-colors" title="Edit Lifecycle">
+                    <Settings size={12} />
+                  </button>
+                </div>
+                <div className="text-xs font-bold text-foreground/90">
+                  <span>{metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'}</span>
+                  <span className="text-foreground/60"> / {metric.s3BucketQuota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
+                </div>
+              </div>
+             
+             <div className="flex items-center justify-center gap-3 bg-background/70 p-2 rounded-lg">
+                <div className="flex items-center gap-1 text-green-600" title="Success Runs">
+                  <CheckCircle2 size={14} />
+                  <span className="text-xs font-bold">{metric.dagRunSuccessCount ?? 'N/A'}</span>
+                </div>
+                <div className="w-px h-3 bg-border"></div>
+                <div className="flex items-center gap-1 text-red-500" title="Failed Runs">
+                  <XCircle size={14} />
+                  <span className="text-xs font-bold">{metric.dagRunFailureCount ?? 'N/A'}</span>
+                </div>
+             </div>
+          </div>
         </div>
       </div>
-      
-      <div className="space-y-4">
-        <MetricProgress 
-            label="Requested Memory" 
-            current={metric.requestMemoryUsed} 
-            total={metric.requestMemoryQuota} 
-            unit="GB" 
-            icon={HardDrive} 
-            isDynamic={true}
-        />
-        <MetricProgress 
-            label="Limited Memory" 
-            current={metric.limitMemoryUsed} 
-            total={metric.limitMemoryQuota} 
-            unit="GB" 
-            icon={HardDrive} 
-            isDynamic={true}
-        />
-
-        <div className="pt-2 grid grid-cols-3 gap-3 border-t border-border/50">
-           <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
-              <span className="text-xs text-foreground/70 font-medium">DB Usage</span>
-              <span className="text-xs font-bold text-foreground/90">{metric.dbUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} MB</span>
-           </div>
-
-           <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
-              <span className="text-xs text-foreground/70 font-medium">S3 Usage</span>
-              <div className="text-xs font-bold text-foreground/90">
-                <span>{metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'}</span>
-                <span className="text-foreground/60"> / {metric.s3BucketQuota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
-              </div>
-            </div>
-           
-           <div className="flex items-center justify-center gap-3 bg-background/70 p-2 rounded-lg">
-              <div className="flex items-center gap-1 text-green-600" title="Success Runs">
-                <CheckCircle2 size={14} />
-                <span className="text-xs font-bold">{metric.dagRunSuccessCount ?? 'N/A'}</span>
-              </div>
-              <div className="w-px h-3 bg-border"></div>
-              <div className="flex items-center gap-1 text-red-500" title="Failed Runs">
-                <XCircle size={14} />
-                <span className="text-xs font-bold">{metric.dagRunFailureCount ?? 'N/A'}</span>
-              </div>
-           </div>
-        </div>
-      </div>
-    </div>
+      <LifecycleConfigModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        namespace={metric.namespace}
+      />
+    </>
   );
 }
