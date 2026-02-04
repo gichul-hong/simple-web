@@ -33,7 +33,8 @@ function generateDummyAirflowMetrics(): AirflowInstanceMetric[] {
     requestMemoryQuota: 8,
     limitMemoryUsed: parseFloat((Math.random() * 16).toFixed(2)),
     limitMemoryQuota: 16,
-    s3BucketUsage: parseFloat((Math.random() * 200).toFixed(2)), // Add dummy S3 usage
+    s3BucketUsage: parseFloat((Math.random() * 200).toFixed(2)),
+    s3BucketQuota: 250, // Add dummy S3 quota
   }));
 }
 

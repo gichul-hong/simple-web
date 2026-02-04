@@ -209,11 +209,11 @@ export function MonitoringList() {
                         <thead className="bg-gray-50/50">
                             <tr>
                                 <SortableHeader column="namespace" label="Namespace" className="pl-4 sm:pl-6" />
-                                <SortableHeader column="dag_run_success_count" label="DAG O/X" />
+                                <SortableHeader column="dagRunSuccessCount" label="DAG O/X" />
                                 <SortableHeader column="s3BucketUsage" label="S3 Usage" />
-                                <SortableHeader column="db_usage" label="DB Usage" />
-                                <SortableHeader column="request_memory_used" label="Req Mem Used" isDynamic={true} />
-                                <SortableHeader column="limit_memory_used" label="Limit Mem Used" isDynamic={true} />
+                                <SortableHeader column="dbUsage" label="DB Usage" />
+                                <SortableHeader column="requestMemoryUsed" label="Req Mem Used" isDynamic={true} />
+                                <SortableHeader column="limitMemoryUsed" label="Limit Mem Used" isDynamic={true} />
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">

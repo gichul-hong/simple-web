@@ -30,7 +30,10 @@ export function MonitoringRow({ metric }: MonitoringRowProps) {
       <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/80">
         <div className="flex items-center gap-1.5">
             <Database size={14} className="text-foreground/60" />
-            {metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB
+            <div>
+              <span>{metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'}</span>
+              <span className="text-foreground/60"> / {metric.s3BucketQuota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
+            </div>
         </div>
       </td>
 

@@ -10,6 +10,7 @@ export interface AirflowInstanceMetric {
   limitMemoryUsed: number; // Float
   limitMemoryQuota: number; // Float
   s3BucketUsage?: number; // GB
+  s3BucketQuota?: number; // GB
 }
 
 export interface ApplicationMetrics {

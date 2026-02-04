@@ -83,7 +83,10 @@ export function MonitoringCard({ metric }: MonitoringCardProps) {
 
            <div className="flex items-center justify-between bg-background/70 p-2 rounded-lg">
               <span className="text-xs text-foreground/70 font-medium">S3 Usage</span>
-              <span className="text-xs font-bold text-foreground/90">{metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
+              <div className="text-xs font-bold text-foreground/90">
+                <span>{metric.s3BucketUsage?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'}</span>
+                <span className="text-foreground/60"> / {metric.s3BucketQuota?.toLocaleString(undefined, { maximumFractionDigits: 2 }) ?? 'N/A'} GB</span>
+              </div>
             </div>
            
            <div className="flex items-center justify-center gap-3 bg-background/70 p-2 rounded-lg">
