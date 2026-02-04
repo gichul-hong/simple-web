@@ -1,9 +1,10 @@
 import React from 'react';
 import { Application } from '@/types/application';
-import { Box, Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle, Wind, Activity, FolderOpen, Github, Heart } from 'lucide-react';
+import { Box, Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle, Wind, Activity, FolderOpen, Github } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import Link from 'next/link';
 import { useConfig } from '../providers/ConfigContext';
+import { ToggleSwitch } from '../ui/ToggleSwitch';
 
 interface ApplicationCardProps {
   app: Application;
@@ -48,6 +49,25 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
   ];
   const colorIndex = app.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatarColors.length;
   const avatarColor = avatarColors[colorIndex];
+  
+  const handleAutoSyncToggle = async (enabled: boolean): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/applications/${app.namespace}/${app.name}/autosync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ autoSync: enabled }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to toggle auto-sync');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Error toggling auto-sync:', error);
+      return false;
+    }
+  };
 
   return (
     <div className="group relative flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
@@ -83,10 +103,21 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
 
         {/* Card Footer */}
         <div className="px-4 py-3 bg-background/50 border-t border-border/50 flex items-center justify-between text-xs">
-            {/* Status Pill */}
-             <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-full border", statusInfo.bg, statusInfo.color, statusInfo.border)}>
-                 <StatusIcon size={12} className={app.status === 'Progressing' ? 'animate-spin' : ''} />
-                 <span className="font-medium">{app.status}</span>
+            <div className="flex items-center gap-4">
+                {/* Status Pill */}
+                 <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-full border", statusInfo.bg, statusInfo.color, statusInfo.border)}>
+                     <StatusIcon size={12} className={app.status === 'Progressing' ? 'animate-spin' : ''} />
+                     <span className="font-medium">{app.status}</span>
+                </div>
+                {/* AutoSync Toggle */}
+                <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-foreground/70">Auto Sync</span>
+                    <ToggleSwitch
+                        initialChecked={app.autoSync}
+                        onToggle={handleAutoSyncToggle}
+                        title={app.autoSync ? 'Disable Auto Sync' : 'Enable Auto Sync'}
+                    />
+                </div>
             </div>
 
             {/* Actions / Links */}

@@ -28,7 +28,7 @@ const generateDummyData = (count: number): Application[] => {
       externalURL: Math.random() > 0.2 ? `https://airflow-${i}.example.com` : '',
       fileBrowserUrl: Math.random() > 0.3 ? `https://files-${i}.example.com` : '',
       namespace: namespaces[Math.floor(Math.random() * namespaces.length)],
-      authSync: Math.random() > 0.5,
+      autoSync: Math.random() > 0.5,
       creationTimestamp: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString(),
     };
   });

@@ -10,7 +10,7 @@ import { signIn } from 'next-auth/react';
 import { useConfig } from '../providers/ConfigContext';
 
 type SortDirection = 'asc' | 'desc';
-type SortColumn = 'name' | 'status' | 'project' | 'chartName' | 'creationTimestamp';
+type SortColumn = 'name' | 'status' | 'project' | 'chartName' | 'creationTimestamp' | 'autoSync';
 
 export function ApplicationList() {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -188,6 +188,7 @@ export function ApplicationList() {
                                 <tr>
                                     <SortableHeader column="name" label="Application" className="pl-4 sm:pl-6" />
                                     <SortableHeader column="status" label="Status" />
+                                    <SortableHeader column="autoSync" label="Auto Sync" />
                                     <SortableHeader column="project" label="Project" />
                                     <SortableHeader column="chartName" label="Chart Info" />
                                     <SortableHeader column="creationTimestamp" label="Created" />

@@ -4,6 +4,7 @@ import { ExternalLink, GitBranch, Box, Clock, CheckCircle, AlertCircle, Loader2,
 import { cn } from '@/app/lib/utils';
 import Link from 'next/link';
 import { useConfig } from '../providers/ConfigContext';
+import { ToggleSwitch } from '../ui/ToggleSwitch';
 
 interface ApplicationRowProps {
   app: Application;
@@ -26,6 +27,26 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
   const githubUrl = `${githubBaseUrl}/${app.namespace}/airflow-dags`;
   const grafanaUrl = `${grafanaBaseUrl}?project_name=${app.namespace}`;
 
+  const handleAutoSyncToggle = async (enabled: boolean): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/applications/${app.namespace}/${app.name}/autosync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ autoSync: enabled }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to toggle auto-sync');
+        // You might want to add a toast notification here in a real app
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Error toggling auto-sync:', error);
+      return false;
+    }
+  };
+
   return (
     <tr className="group hover:bg-background/50 transition-colors border-b border-border last:border-0">
       <td className="py-4 pl-4 pr-3 sm:pl-6">
@@ -44,6 +65,13 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
             <StatusIcon size={14} className={app.status === 'Progressing' ? 'animate-spin' : ''} />
             {app.status}
         </div>
+      </td>
+      <td className="px-3 py-4 whitespace-nowrap">
+        <ToggleSwitch
+          initialChecked={app.autoSync}
+          onToggle={handleAutoSyncToggle}
+          title={app.autoSync ? 'Disable Auto Sync' : 'Enable Auto Sync'}
+        />
       </td>
       <td className="px-3 py-4 whitespace-nowrap text-sm text-foreground/80">
         {app.project}

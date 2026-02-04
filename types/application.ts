@@ -8,7 +8,7 @@ export interface Application {
   externalURL: string;
   namespace: string;
   applicationSetName?: string;
-  authSync: boolean;
+  autoSync: boolean;
   fileBrowserUrl?: string;
   creationTimestamp: string;
 }
