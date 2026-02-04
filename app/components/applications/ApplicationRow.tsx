@@ -25,7 +25,8 @@ export function ApplicationRow({ app }: ApplicationRowProps) {
   const { githubBaseUrl, grafanaBaseUrl } = useConfig();
 
   const githubUrl = `${githubBaseUrl}/${app.namespace}/airflow-dags`;
-  const grafanaUrl = `${grafanaBaseUrl}?project_name=${app.namespace}`;
+  const connector = grafanaBaseUrl.includes('?') ? '&' : '?';
+  const grafanaUrl = `${grafanaBaseUrl}${connector}project_name=${app.namespace}`;
 
   const handleAutoSyncToggle = async (enabled: boolean): Promise<boolean> => {
     try {

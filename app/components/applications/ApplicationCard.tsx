@@ -25,7 +25,8 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
   const { githubBaseUrl, grafanaBaseUrl } = useConfig();
 
   const githubUrl = `${githubBaseUrl}/${app.namespace}/airflow-dags`;
-  const grafanaUrl = `${grafanaBaseUrl}?project_name=${app.namespace}`;
+  const connector = grafanaBaseUrl.includes('?') ? '&' : '?';
+  const grafanaUrl = `${grafanaBaseUrl}${connector}project_name=${app.namespace}`;
 
   // Generate a consistent "avatar" color based on the app name
   const avatarColors = [
