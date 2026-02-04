@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
-export async function POST(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { namespace: string; name: string } }
 ) {
@@ -33,12 +33,12 @@ export async function POST(
     const body = await request.json();
     const { autoSync } = body; // Expecting { "autoSync": true/false }
 
-    const targetUrl = `${backendApiUrl}/airflow/${namespace}/application/${name}/autosync`;
+    const targetUrl = `${backendApiUrl}/api/v1/airflow/${namespace}/application/${name}/autosync`;
 
     console.log(`Proxying autosync request to: ${targetUrl}`);
 
     const backendResponse = await fetch(targetUrl, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,

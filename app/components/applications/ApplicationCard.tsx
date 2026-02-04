@@ -53,7 +53,7 @@ export function ApplicationCard({ app }: ApplicationCardProps) {
   const handleAutoSyncToggle = async (enabled: boolean): Promise<boolean> => {
     try {
       const response = await fetch(`/api/applications/${app.namespace}/${app.name}/autosync`, {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ autoSync: enabled }),
       });
