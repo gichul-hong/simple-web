@@ -35,7 +35,7 @@ export async function PUT(
     const body = await request.json();
     const { autoSync } = body; // Expecting { "autoSync": true/false }
 
-    const targetUrl = `${backendApiUrl}/api/v1/argocd/${argoCdProjectName}/application/${name}/autosync`;
+    const targetUrl = `${backendApiUrl}/api/v1/argocd/${argoCdProjectName}/applications/${name}/autosync`;
 
     console.log(`Proxying autosync request to: ${targetUrl}`);
 
