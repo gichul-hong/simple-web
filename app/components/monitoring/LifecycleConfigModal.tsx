@@ -53,10 +53,8 @@ export function LifecycleConfigModal({ isOpen, onClose, namespace }: LifecycleCo
     setIsSaving(true);
     setError(null);
     try {
-      const response = await fetch(`/api/s3/namespace/${namespace}/lifecycle`, {
+      const response = await fetch(`/api/s3/namespace/${namespace}/lifecycle?days=${Number(days)}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ days: String(days) }),
       });
       if (!response.ok) {
         const errData = await response.json().catch(() => ({ details: 'Failed to apply config' }));

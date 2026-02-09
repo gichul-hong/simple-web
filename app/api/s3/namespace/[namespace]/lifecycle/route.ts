@@ -52,10 +52,19 @@ export async function PUT(
   { params }: { params: { namespace: string } }
 ) {
   const { namespace } = params;
-  const targetUrl = getBackendLifecycleUrl(namespace);
-  if (!targetUrl) {
+  const baseTargetUrl = getBackendLifecycleUrl(namespace);
+  if (!baseTargetUrl) {
     return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
   }
+
+  const { searchParams } = new URL(request.url);
+  const days = searchParams.get('days');
+
+  if (!days) {
+    return NextResponse.json({ error: 'Missing days parameter' }, { status: 400 });
+  }
+
+  const targetUrl = `${baseTargetUrl}?days=${days}`;
 
   const token = await getToken({ req: request });
   const accessToken = token?.accessToken;
@@ -65,19 +74,18 @@ export async function PUT(
   }
 
   try {
-    const body = await request.json(); // { "days": 15 }
-    
     const backendResponse = await fetch(targetUrl, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify(body),
     });
 
-    // If the backend call was successful, we assume it worked without needing a body.
-    // Return a simple success response to our frontend.
+    if (!backendResponse.ok) {
+      const errorText = await backendResponse.text();
+      return NextResponse.json({ error: 'Failed to update lifecycle config', details: errorText }, { status: backendResponse.status });
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error updating lifecycle config:", error);
