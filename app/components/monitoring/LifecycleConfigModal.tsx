@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal } from '../ui/Modal';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface LifecycleConfigModalProps {
   isOpen: boolean;
@@ -16,12 +16,14 @@ export function LifecycleConfigModal({ isOpen, onClose, namespace }: LifecycleCo
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const fetchConfig = useCallback(async () => {
     if (!isOpen || !namespace) return;
 
     setIsLoading(true);
     setError(null);
+    setIsSuccess(false);
     try {
       const response = await fetch(`/api/s3/namespace/${namespace}/lifecycle`);
       if (!response.ok) {
@@ -46,12 +48,13 @@ export function LifecycleConfigModal({ isOpen, onClose, namespace }: LifecycleCo
   }, [fetchConfig]);
 
   const handleApply = async () => {
-    if (days === '' || Number(days) <= 0) {
-      setError('Please enter a valid number of days (greater than 0).');
+    if (days === '' || Number(days) < 15) {
+      setError('Please enter a valid number of days (at least 15).');
       return;
     }
     setIsSaving(true);
     setError(null);
+    setIsSuccess(false);
     try {
       const response = await fetch(`/api/s3/namespace/${namespace}/lifecycle?days=${Number(days)}`, {
         method: 'PUT',
@@ -60,9 +63,10 @@ export function LifecycleConfigModal({ isOpen, onClose, namespace }: LifecycleCo
         const errData = await response.json().catch(() => ({ details: 'Failed to apply config' }));
         throw new Error(errData.details || 'Failed to apply config');
       }
-      // Re-fetch config to show updated state before closing
-      await fetchConfig(); 
-      setTimeout(onClose, 700); // Close modal after a short delay to show success
+      
+      setIsSuccess(true);
+      // Re-fetch config to show updated state
+      await fetchConfig();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -105,15 +109,24 @@ export function LifecycleConfigModal({ isOpen, onClose, namespace }: LifecycleCo
             onChange={(e) => setDays(e.target.value === '' ? '' : Number(e.target.value))}
             className="mt-1 block w-full rounded-md border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"
             placeholder="e.g., 15"
-            disabled={isLoading}
+            disabled={isLoading || isSaving}
           />
         </div>
+
         {error && !isLoading && (
           <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200/50">
             <AlertCircle size={16} className="shrink-0" />
             <span>{error}</span>
           </div>
         )}
+        
+        {isSuccess && (
+          <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-3 rounded-md border border-green-200/50">
+            <CheckCircle size={16} className="shrink-0" />
+            <span>Lifecycle policy applied successfully.</span>
+          </div>
+        )}
+
         <div className="flex justify-end gap-3 pt-4">
           <button
             type="button"
